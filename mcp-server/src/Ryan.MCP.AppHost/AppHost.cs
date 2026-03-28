@@ -8,6 +8,8 @@ var backendDocsPath = Path.Combine(repoRoot, "backend");
 var frontendDocsPath = Path.Combine(repoRoot, "frontend");
 var localAgentsPath = Path.Combine(repoRoot, ".local", "agents");
 var indexPath = Path.Combine(repoRoot, ".local", "mcp-index");
+var memoryDataPath = Path.Combine(repoRoot, ".local", "memory");
+Directory.CreateDirectory(memoryDataPath);
 
 var mcpServer = builder.AddProject<Projects.Ryan_MCP_Mcp>("mcp-server")
     .WithEnvironment("McpOptions__Knowledge__ProjectSlug", "ryan-mcp")
@@ -117,10 +119,13 @@ if (fetchEnabled)
 var memoryEnabled = builder.Configuration["Projects:Memory:Enabled"]?.ToLower() == "true";
 if (memoryEnabled)
 {
-    var memoryMcp = builder.AddContainer("memory-mcp", "mcp/memory:latest")
+    // supergateway wraps the stdio-based memory server as HTTP/SSE.
+    // mcp/memory:latest exits immediately without a stdio client — supergateway keeps it alive.
+    var memoryMcp = builder.AddContainer("memory-mcp", "ghcr.io/supercorp-ai/supergateway")
         .WithHttpEndpoint(name: "mcp", port: 8801, targetPort: 8000)
-        .WithEnvironment("HOST", "0.0.0.0")
-        .WithEnvironment("PORT", "8000");
+        .WithArgs("--port", "8000", "--stdio", "npx -y @modelcontextprotocol/server-memory")
+        .WithEnvironment("MEMORY_FILE_PATH", "/data/memory.json")
+        .WithBindMount(source: memoryDataPath, target: "/data", isReadOnly: false);
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__memory",
         memoryMcp.GetEndpoint("mcp"));

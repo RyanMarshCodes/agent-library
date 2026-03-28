@@ -205,29 +205,43 @@ claude mcp add --transport http --scope global ryan-mcp http://localhost:8787/mc
 }
 ```
 
-### Using MCP tools in your session
+### Proactive MCP usage (non-negotiable triggers)
 
-If the `ryan-mcp` server is connected in your IDE or agent context, **prefer its tools over inline reasoning** for the following:
+When `ryan-mcp` is connected, **do not start reasoning from training data alone**. Call the appropriate tool first — these are not suggestions:
 
-- Use `get_context(language, task?)` before starting any task — surfaces the right agents and standards for your stack
-- Use `recommend_agent(task)` instead of guessing which agent to invoke
-- Use `read_document(tier, path)` to load standards before writing code, not after
-- Use `search_documents(query)` to find relevant standards by keyword
+| Situation | Tool to call |
+|-----------|-------------|
+| Starting any non-trivial coding task | `get_context(language, task)` |
+| Unsure which specialist agent to use | `recommend_agent(task)` |
+| Working in a stack you haven't seen in this session | `get_context(language)` |
+| Looking for a coding standard or convention | `search_documents(query)` |
+| Recalling a past architectural decision or convention | `search_nodes(query)` |
+| Recording a new decision, convention, or pattern worth remembering | `create_entities` + `add_observations` |
 
-If the server is not running or not connected, fall back to the agent library at `ai-docs/agents/` and standards at `global/`, `backend/`, and `frontend/` directly.
+**`get_context` is the default entry point.** It returns the right agents and standards for your stack in one call. Call it before writing code, not after.
 
-### Key MCP Tools
+**`search_nodes` / `create_entities` are the memory tools.** Use them to recall and persist decisions that go beyond a single session — architecture choices, team conventions, recurring patterns, known gotchas. This is separate from `ai-docs/` (which is file-based session memory); the memory graph is queryable and relational.
+
+### Fallback (MCP not running or not connected)
+
+Fall back to the agent library at `ai-docs/agents/` and standards at `global/`, `backend/`, and `frontend/` directly. Use `recommend_agent`-style reasoning manually: read the catalog at `ai-docs/catalog.json`, find the best-matching agent, load it.
+
+### MCP tool reference
 
 | Tool | Purpose |
-|---|---|
+|------|---------|
 | `get_context(language, task?)` | Polyglot entry point — surfaces relevant agents + standards for any stack |
-| `recommend_agent(task)` | Returns the best agent for a task with activation commands |
+| `recommend_agent(task)` | Returns the best-matching agent with activation instructions |
 | `list_agents(scope?)` | Browse all indexed agents |
 | `get_agent(name)` | Fetch full agent instructions |
 | `search_agents(query)` | Keyword search across agents |
 | `list_standards(tier?, language?)` | Browse indexed standards documents |
 | `read_document(tier, path)` | Fetch full content of a standards document |
 | `search_documents(query)` | Search across all standards content |
+| `search_nodes(query)` | Query the persistent knowledge graph (memory) |
+| `create_entities` | Add entities to the knowledge graph |
+| `add_observations` | Attach facts to existing graph entities |
+| `open_nodes(names)` | Load full entity detail from the graph |
 
 ### Standards Precedence
 

@@ -1,6 +1,6 @@
 {
   "libraryName": "central-agent-library-seed",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Portable custom agent definitions — stack-agnostic, designed to work across any language, framework, or AI coding platform.",
   "namingConvention": "kebab-case + .agent.md (e.g., code-analysis.agent.md). The JSON `name` field stays stable (PascalCase + Agent suffix) for tooling and delegation.",
   "agents": [
@@ -229,6 +229,13 @@
       "tags": ["testing", "unit-tests", "tdd", "conventions", "any-stack"]
     },
     {
+      "name": "UITestingExpert",
+      "file": "agents/ui-automation-tester.agent.md",
+      "scope": "testing",
+      "description": "Expert in UI automation testing (Playwright, Cypress, Selenium, Puppeteer) and frontend unit testing (Jest, Vitest, Mocha) — stack-agnostic proficiency across all browser-testing and unit-testing frameworks",
+      "tags": ["testing", "playwright", "cypress", "selenium", "puppeteer", "e2e", "browser-testing", "jest", "vitest", "mocha", "unit-tests", "visual-regression", "accessibility-testing", "any-stack"]
+    },
+    {
       "name": "TestWriterAgent",
       "file": "agents/test-writer.agent.md",
       "scope": "testing",
@@ -248,6 +255,62 @@
       "scope": "debugging",
       "description": "Root cause analysis from any issue, error, or stack trace across any stack",
       "tags": ["root-cause-analysis", "debugging", "stack-trace", "any-stack"]
+    },
+    {
+      "name": "DatabaseDesignerAgent",
+      "file": "agents/database-designer.agent.md",
+      "scope": "data",
+      "description": "Schema design, indexing strategy, migration planning, and query optimization across SQL and NoSQL databases",
+      "tags": ["database", "schema-design", "sql", "nosql", "migrations", "indexing", "postgresql", "sqlserver", "mongodb", "any-stack"]
+    },
+    {
+      "name": "ContainerExpertAgent",
+      "file": "agents/container-expert.agent.md",
+      "scope": "devops",
+      "description": "Multi-stage Dockerfiles, docker-compose for local development, Kubernetes manifests, and container image optimization",
+      "tags": ["docker", "kubernetes", "containers", "docker-compose", "k8s", "helm", "image-optimization", "devops"]
+    },
+    {
+      "name": "OpenAPIClientBuilderAgent",
+      "file": "agents/openapi-client-builder.agent.md",
+      "scope": "api-design",
+      "description": "Reads OpenAPI/Swagger/AsyncAPI specs and designs typed API clients with appropriate abstraction, auth handling, retry policies, and error strategies",
+      "tags": ["openapi", "swagger", "asyncapi", "api-client", "codegen", "nswag", "kiota", "http-client", "typescript", "csharp", "any-stack"]
+    },
+    {
+      "name": "PerformanceProfilerAgent",
+      "file": "agents/performance-profiler.agent.md",
+      "scope": "performance",
+      "description": "Profiling, benchmarking, hot-path identification, memory analysis, and load testing across .NET, Node.js, and browser environments",
+      "tags": ["profiling", "benchmarking", "performance", "memory", "dotnet-trace", "benchmarkdotnet", "k6", "load-testing", "any-stack"]
+    },
+    {
+      "name": "DataMigrationSpecialistAgent",
+      "file": "agents/data-migration.agent.md",
+      "scope": "data",
+      "description": "ETL patterns, expand/contract schema migrations, dual-write strategies, rollback design, and data validation for safe schema and data changes",
+      "tags": ["migration", "etl", "schema-migration", "dual-write", "expand-contract", "data-quality", "rollback", "any-stack"]
+    },
+    {
+      "name": "ObservabilityEngineerAgent",
+      "file": "agents/observability-engineer.agent.md",
+      "scope": "observability",
+      "description": "Instruments applications with structured/scoped logging, distributed tracing, and metrics — ensuring correlation IDs flow across all service boundaries in distributed systems",
+      "tags": ["observability", "telemetry", "logging", "tracing", "metrics", "opentelemetry", "structured-logging", "correlation", "distributed-systems", "dotnet", "any-stack"]
+    },
+    {
+      "name": "ProductDiscoveryAgent",
+      "file": "agents/product-discovery.agent.md",
+      "scope": "product-strategy",
+      "description": "Takes a rough domain idea and acts as a domain expert — researches the space, maps competitor gaps, identifies the underserved niche, and produces a complete feature set and requirements spec ready to build",
+      "tags": ["product", "discovery", "requirements", "feature-definition", "domain-research", "competitor-analysis", "user-stories", "spec", "indie-dev", "saas", "ios"]
+    },
+    {
+      "name": "ProductStrategistAgent",
+      "file": "agents/product-strategist.agent.md",
+      "scope": "product-strategy",
+      "description": "Generates and ruthlessly validates profitable app/SaaS ideas for indie developers — filters for realistic build time, real monetization paths, and fastest route to first revenue",
+      "tags": ["product", "saas", "ios", "indie-dev", "monetization", "mvp", "validation", "market-research", "idea-generation", "burnout-prevention"]
     }
   ]
 }

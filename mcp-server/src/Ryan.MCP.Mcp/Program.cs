@@ -10,6 +10,18 @@ builder.Services.Configure<McpOptions>(builder.Configuration.GetSection(McpOptio
 var mcpOptions = builder.Configuration.GetSection(McpOptions.SectionName).Get<McpOptions>() ?? new McpOptions();
 builder.Services.AddSingleton(mcpOptions);
 
+// Use PascalCase JSON for all Results.Ok() responses — the management UI accesses properties by PascalCase name
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.PropertyNamingPolicy = null);
+
+// HTTP client for fetch tool
+builder.Services.AddHttpClient("fetch", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Ryan.MCP/1.0 (MCP fetch tool; +https://github.com/RyanMarshCodes/agent-library)");
+});
+
 // Core services
 builder.Services.AddSingleton<ExternalConnectorRegistry>();
 builder.Services.AddSingleton<DocumentIngestionCoordinator>();

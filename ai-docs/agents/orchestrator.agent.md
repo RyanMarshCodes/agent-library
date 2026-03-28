@@ -56,6 +56,11 @@ Map every incoming task to the most specific matching agent. When multiple agent
 | Write tests (any stack) | `test-writer` |
 | Generate full test suite from scratch | `test-generator` |
 | Tech debt analysis | `tech-debt-analysis` |
+| Database schema, indexing, migrations, query optimization | `database-designer` |
+| Docker, docker-compose, Kubernetes manifests | `container-expert` |
+| OpenAPI/Swagger spec → typed client design or generation | `openapi-client-builder` |
+| Profiling, benchmarking, memory, load testing | `performance-profiler` |
+| ETL, data migration, expand/contract, dual-write | `data-migration` |
 | Codebase analysis, architecture review | `code-analysis` |
 | ADR — record an architecture decision | `adr-generator` |
 | Facilitate an architecture decision | `architecture-decision` |

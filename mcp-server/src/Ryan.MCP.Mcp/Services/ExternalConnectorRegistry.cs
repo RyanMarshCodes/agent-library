@@ -1,27 +1,71 @@
+using Microsoft.Extensions.Options;
 using Ryan.MCP.Mcp.Configuration;
 
 namespace Ryan.MCP.Mcp.Services;
 
-public sealed class ExternalConnectorRegistry
+/// <summary>
+/// Holds external MCP connector definitions from <see cref="McpOptions"/>.
+/// Subscribes to configuration reloads so edits to appsettings (etc.) apply without restart.
+/// </summary>
+public sealed class ExternalConnectorRegistry : IDisposable
 {
-    private readonly List<ExternalMcpConnectorOptions> _configured;
-    private readonly List<ExternalMcpConnectorOptions> _enabled;
+    private readonly IOptionsMonitor<McpOptions> _monitor;
+    private readonly IDisposable? _onChange;
+    private readonly object _gate = new();
+    private IReadOnlyList<ExternalMcpConnectorOptions> _configured = [];
+    private IReadOnlyList<ExternalMcpConnectorOptions> _enabled = [];
 
-    public ExternalConnectorRegistry(McpOptions options)
+    public ExternalConnectorRegistry(IOptionsMonitor<McpOptions> monitor)
     {
+        _monitor = monitor;
+        Refresh(monitor.CurrentValue);
+        _onChange = monitor.OnChange((opts, _) => Refresh(opts));
+    }
+
+    public IReadOnlyList<ExternalMcpConnectorOptions> Configured
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _configured;
+            }
+        }
+    }
+
+    public IReadOnlyList<ExternalMcpConnectorOptions> Enabled
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _enabled;
+            }
+        }
+    }
+
+    public void Dispose() => _onChange?.Dispose();
+
+    private void Refresh(McpOptions? options)
+    {
+        options ??= _monitor.CurrentValue;
         ArgumentNullException.ThrowIfNull(options);
+
         var overrides = options.ExternalConnectorEndpointOverrides;
 
-        _configured = options.ExternalConnectors
+        var configured = options.ExternalConnectors
             .Where(x => !string.IsNullOrWhiteSpace(x.Name))
             .Select(x => ApplyOverrides(x, overrides))
             .ToList();
-        _enabled = _configured.Where(x => x.Enabled).ToList();
+
+        var enabled = configured.Where(x => x.Enabled).ToList();
+
+        lock (_gate)
+        {
+            _configured = configured;
+            _enabled = enabled;
+        }
     }
-
-    public IReadOnlyList<ExternalMcpConnectorOptions> Configured => _configured;
-
-    public IReadOnlyList<ExternalMcpConnectorOptions> Enabled => _enabled;
 
     private static ExternalMcpConnectorOptions ApplyOverrides(
         ExternalMcpConnectorOptions source,

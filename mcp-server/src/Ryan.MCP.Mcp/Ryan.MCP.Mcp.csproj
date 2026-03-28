@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.1.0" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.22" />
   </ItemGroup>
 
 
