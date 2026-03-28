@@ -1,0 +1,253 @@
+{
+  "libraryName": "central-agent-library-seed",
+  "version": "0.6.0",
+  "description": "Portable custom agent definitions — stack-agnostic, designed to work across any language, framework, or AI coding platform.",
+  "namingConvention": "kebab-case + .agent.md (e.g., code-analysis.agent.md). The JSON `name` field stays stable (PascalCase + Agent suffix) for tooling and delegation.",
+  "agents": [
+    {
+      "name": "OrchestratorAgent",
+      "file": "agents/orchestrator.agent.md",
+      "scope": "orchestration",
+      "description": "Token-efficient task orchestrator — decomposes requests, routes each subtask to the right specialist agent, parallelizes where possible, and returns aggregated results. Never does specialist work itself.",
+      "tags": ["orchestration", "delegation", "routing", "multi-agent", "efficiency", "any-stack"]
+    },
+    {
+      "name": "AccessibilityExpert",
+      "file": "agents/accessibility.agent.md",
+      "scope": "accessibility",
+      "description": "Expert assistant for web accessibility (WCAG 2.1/2.2), inclusive UX, and a11y testing",
+      "tags": ["wcag", "a11y", "accessibility", "inclusive-ux", "any-stack"]
+    },
+    {
+      "name": "ADRGeneratorAgent",
+      "file": "agents/adr-generator.agent.md",
+      "scope": "documentation",
+      "description": "Creates comprehensive Architectural Decision Records (ADRs) with structured formatting optimized for AI consumption and human readability",
+      "tags": ["adr", "architecture", "documentation", "decision-records"]
+    },
+    {
+      "name": "AIAgentExpert",
+      "file": "agents/ai-agent-expert.agent.md",
+      "scope": "agent-authoring",
+      "description": "Designs, writes, and audits AI agent instruction files for any platform",
+      "tags": ["agent-design", "instructions", "skills", "portable", "multi-platform"]
+    },
+    {
+      "name": "APIDesignerAgent",
+      "file": "agents/api-designer.agent.md",
+      "scope": "api-design",
+      "description": "Designs new APIs, creates API specifications, and refactors existing API architecture for scalability and developer experience",
+      "tags": ["rest", "graphql", "openapi", "api-design", "versioning", "any-stack"]
+    },
+    {
+      "name": "ArchitectureDecisionAgent",
+      "file": "agents/architecture-decision.agent.md",
+      "scope": "architecture",
+      "description": "Facilitates and documents Architecture Decision Records — grounding decisions in evidence, recording alternatives with trade-offs",
+      "tags": ["adr", "architecture", "documentation", "decision-records", "trade-offs"]
+    },
+    {
+      "name": "AzurePrincipalArchitect",
+      "file": "agents/azure-principal-architect.agent.md",
+      "scope": "cloud-architecture",
+      "description": "Expert Azure Principal Architect guidance using Azure Well-Architected Framework principles and Microsoft best practices",
+      "tags": ["azure", "well-architected", "cloud", "architecture", "microsoft"]
+    },
+    {
+      "name": "BackendDeveloperAgent",
+      "file": "agents/backend-developer.agent.md",
+      "scope": "backend",
+      "description": "Builds server-side APIs, microservices, and backend systems with expertise in Node.js, Python, and Go",
+      "tags": ["nodejs", "python", "go", "api", "microservices", "backend", "polyglot"]
+    },
+    {
+      "name": "ChangelogAgent",
+      "file": "agents/changelog.agent.md",
+      "scope": "documentation",
+      "description": "Generates and maintains CHANGELOG.md from git history, tags, or PR descriptions using Keep a Changelog format with user-facing language",
+      "tags": ["changelog", "documentation", "git", "versioning", "keep-a-changelog"]
+    },
+    {
+      "name": "CodeAnalysisAgent",
+      "file": "agents/code-analysis.agent.md",
+      "scope": "codebase-analysis",
+      "description": "Senior architect-level codebase analysis — stack detection, architecture, quality",
+      "tags": ["architecture", "analysis", "stack-detection", "onboarding", "read-only"]
+    },
+    {
+      "name": "CodeSimplifierAgent",
+      "file": "agents/code-simplifier.agent.md",
+      "scope": "refactoring",
+      "description": "Simplifies and cleans code without changing functionality",
+      "tags": ["maintainability", "readability", "simplification", "any-stack"]
+    },
+    {
+      "name": "CSharpDotNetJanitorAgent",
+      "file": "agents/csharp-dotnet-janitor.agent.md",
+      "scope": "refactoring",
+      "description": "C#/.NET cleanup and modernization — removes dead code and applies modern C# syntax (nullable types, pattern matching, primary constructors)",
+      "tags": ["csharp", "dotnet", "cleanup", "modernization", "nullable-types", "refactoring"]
+    },
+    {
+      "name": "CSharpExpertAgent",
+      "file": "agents/csharp-expert.agent.md",
+      "scope": "backend",
+      "description": "Expert C#/.NET developer — clean, well-designed, idiomatic .NET code following current conventions through .NET 10 and C# 14",
+      "tags": ["csharp", "dotnet", "net10", "best-practices", "aspnetcore"]
+    },
+    {
+      "name": "CSharpMCPExpertAgent",
+      "file": "agents/csharp-mcp-expert.agent.md",
+      "scope": "backend",
+      "description": "Expert assistant for developing Model Context Protocol (MCP) servers in C# using the ModelContextProtocol SDK",
+      "tags": ["csharp", "mcp", "dotnet", "aspnetcore", "tools", "prompts", "resources"]
+    },
+    {
+      "name": "DependencyAuditAgent",
+      "file": "agents/dependency-audit.agent.md",
+      "scope": "security-audit",
+      "description": "Audits all project dependencies for known vulnerabilities, license issues, outdatedness, and unused packages — produces a prioritized remediation report",
+      "tags": ["dependencies", "vulnerabilities", "cve", "license", "audit", "any-stack"]
+    },
+    {
+      "name": "DevOpsExpertAgent",
+      "file": "agents/devops-expert.agent.md",
+      "scope": "devops",
+      "description": "DevOps specialist following the infinity loop principle with focus on automation, CI/CD, collaboration, and continuous improvement",
+      "tags": ["ci-cd", "automation", "devops", "deployment", "monitoring", "infrastructure"]
+    },
+    {
+      "name": "DocumentationAgent",
+      "file": "agents/documentation.agent.md",
+      "scope": "documentation",
+      "description": "Technical writer — README, API docs, ADR, runbook, changelog for any project",
+      "tags": ["technical-writing", "readme", "api-docs", "adr", "runbook", "any-stack"]
+    },
+    {
+      "name": "DotNetUpgradeAgent",
+      "file": "agents/dotnet-upgrade.agent.md",
+      "scope": "migration",
+      "description": "C#/.NET version migration specialist — TargetFramework bumps, NuGet compatibility, breaking change remediation, and CI/CD pipeline updates",
+      "tags": ["dotnet", "csharp", "migration", "upgrade", "framework", "nuget"]
+    },
+    {
+      "name": "ElasticsearchObservabilityAgent",
+      "file": "agents/elasticsearch-observability.agent.md",
+      "scope": "observability",
+      "description": "Expert assistant for debugging via O11y, optimizing vector search (RAG), and remediating security threats using live Elastic data",
+      "tags": ["elasticsearch", "observability", "rag", "vector-search", "security", "o11y"]
+    },
+    {
+      "name": "FrontendDeveloperAgent",
+      "file": "agents/frontend-developer.agent.md",
+      "scope": "frontend",
+      "description": "Builds complete frontend applications across React, Vue, and Angular with focus on performance, accessibility, and maintainability",
+      "tags": ["react", "vue", "angular", "frontend", "typescript", "accessibility"]
+    },
+    {
+      "name": "FullstackDeveloperAgent",
+      "file": "agents/fullstack-developer.agent.md",
+      "scope": "fullstack",
+      "description": "Builds complete features spanning database, API, and frontend layers together as a cohesive unit",
+      "tags": ["fullstack", "frontend", "backend", "database", "api", "end-to-end"]
+    },
+    {
+      "name": "GitHubActionsExpertAgent",
+      "file": "agents/github-actions.agent.md",
+      "scope": "devops",
+      "description": "GitHub Actions specialist for secure CI/CD workflows — action pinning, OIDC authentication, least-privilege permissions, and supply-chain security",
+      "tags": ["github-actions", "ci-cd", "security", "oidc", "supply-chain", "devops"]
+    },
+    {
+      "name": "GraphQLArchitectAgent",
+      "file": "agents/graphql-architect.agent.md",
+      "scope": "api-design",
+      "description": "Designs and evolves GraphQL schemas across microservices, implements federation architectures, and optimizes query performance",
+      "tags": ["graphql", "federation", "apollo", "schema-design", "api", "microservices"]
+    },
+    {
+      "name": "UniversalJanitorAgent",
+      "file": "agents/janitor.agent.md",
+      "scope": "refactoring",
+      "description": "Stack-agnostic cleanup — removes dead code, unused dependencies, duplicate logic, and over-engineering. Purely subtractive for any language",
+      "tags": ["cleanup", "dead-code", "tech-debt", "simplification", "any-stack"]
+    },
+    {
+      "name": "MicroservicesArchitectAgent",
+      "file": "agents/microservices-architect.agent.md",
+      "scope": "architecture",
+      "description": "Designs distributed system architectures, decomposes monoliths into microservices, and establishes communication patterns at scale",
+      "tags": ["microservices", "kubernetes", "distributed-systems", "service-mesh", "cloud-native"]
+    },
+    {
+      "name": "MobileDeveloperAgent",
+      "file": "agents/mobile-developer.agent.md",
+      "scope": "mobile",
+      "description": "Builds cross-platform mobile applications with native performance using React Native and Flutter, targeting iOS and Android",
+      "tags": ["react-native", "flutter", "mobile", "cross-platform", "ios", "android"]
+    },
+    {
+      "name": "PlanModeAgent",
+      "file": "agents/plan.agent.md",
+      "scope": "planning",
+      "description": "Strategic planning and architecture assistant — thoughtful analysis before implementation, codebase understanding, requirements clarification",
+      "tags": ["planning", "architecture", "analysis", "strategy", "requirements", "read-only"]
+    },
+    {
+      "name": "PRDescriptionAgent",
+      "file": "agents/pr-description.agent.md",
+      "scope": "documentation",
+      "description": "Generates structured, high-quality GitHub pull request descriptions from branch diff, commit log, and context",
+      "tags": ["pull-request", "documentation", "git", "github", "code-review"]
+    },
+    {
+      "name": "SecurityCheckAgent",
+      "file": "agents/security-check.agent.md",
+      "scope": "security-audit",
+      "description": "OWASP Top 10 security audit adapted to any stack and domain",
+      "tags": ["security", "owasp", "review", "any-stack"]
+    },
+    {
+      "name": "TechDebtAnalysisAgent",
+      "file": "agents/tech-debt-analysis.agent.md",
+      "scope": "tech-debt-analysis",
+      "description": "Evidence-based tech debt analysis and remediation proposal writing",
+      "tags": ["analysis", "architecture", "documentation", "local-first"]
+    },
+    {
+      "name": "TechnicalWriterAgent",
+      "file": "agents/technical-writer.agent.md",
+      "scope": "documentation",
+      "description": "Technical writing specialist for documentation, guides, API references, and developer-facing content",
+      "tags": ["technical-writing", "documentation", "readme", "guides", "any-stack"]
+    },
+    {
+      "name": "TestGeneratorAgent",
+      "file": "agents/test-generator.agent.md",
+      "scope": "testing",
+      "description": "Generates comprehensive, idiomatic test suites by reading existing project tests first and matching conventions exactly",
+      "tags": ["testing", "unit-tests", "tdd", "conventions", "any-stack"]
+    },
+    {
+      "name": "TestWriterAgent",
+      "file": "agents/test-writer.agent.md",
+      "scope": "testing",
+      "description": "Test writing specialist for unit, integration, and end-to-end tests across any stack",
+      "tags": ["testing", "unit-tests", "integration-tests", "e2e", "any-stack"]
+    },
+    {
+      "name": "ToolingEngineerAgent",
+      "file": "agents/tooling-engineer.agent.md",
+      "scope": "tooling",
+      "description": "Builds and enhances developer tools including CLIs, code generators, build tools, and IDE extensions",
+      "tags": ["cli", "build-tools", "code-generators", "ide-extensions", "dx", "tooling"]
+    },
+    {
+      "name": "TroubleshootingAgent",
+      "file": "agents/troubleshooting.agent.md",
+      "scope": "debugging",
+      "description": "Root cause analysis from any issue, error, or stack trace across any stack",
+      "tags": ["root-cause-analysis", "debugging", "stack-trace", "any-stack"]
+    }
+  ]
+}

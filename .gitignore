@@ -1,0 +1,21 @@
+# Generated / runtime
+.local/
+mcp-server/**/bin/
+mcp-server/**/obj/
+
+# Session logs (personal, not shared)
+ai-docs/sessions/
+
+# User-specific
+*.user
+.vs/
+.claude/settings.local.json
+
+# Environment / secrets
+.env
+.env.*
+**/appsettings.Development.json
+
+# OS
+.DS_Store
+Thumbs.db
