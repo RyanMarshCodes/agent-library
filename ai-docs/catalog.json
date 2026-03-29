@@ -1,6 +1,6 @@
 {
   "libraryName": "central-agent-library-seed",
-  "version": "0.7.0",
+  "version": "0.12.0",
   "description": "Portable custom agent definitions — stack-agnostic, designed to work across any language, framework, or AI coding platform.",
   "namingConvention": "kebab-case + .agent.md (e.g., code-analysis.agent.md). The JSON `name` field stays stable (PascalCase + Agent suffix) for tooling and delegation.",
   "agents": [
@@ -10,6 +10,13 @@
       "scope": "orchestration",
       "description": "Token-efficient task orchestrator — decomposes requests, routes each subtask to the right specialist agent, parallelizes where possible, and returns aggregated results. Never does specialist work itself.",
       "tags": ["orchestration", "delegation", "routing", "multi-agent", "efficiency", "any-stack"]
+    },
+    {
+      "name": "GameDirectorAgent",
+      "file": "agents/game-director.agent.md",
+      "scope": "game-orchestration",
+      "description": "Game vision hub — core decisions, sequencing, and delegation across narrative, systems design, mobile and Steam/PC shipping, IP screening, Unity/mobile implementation; brief strategic framing only",
+      "tags": ["game-design", "mobile-games", "pc-games", "steam-deck", "orchestration", "delegation", "vision", "production", "multi-agent", "rpg", "f2p"]
     },
     {
       "name": "AccessibilityExpert",
@@ -311,6 +318,62 @@
       "scope": "product-strategy",
       "description": "Generates and ruthlessly validates profitable app/SaaS ideas for indie developers — filters for realistic build time, real monetization paths, and fastest route to first revenue",
       "tags": ["product", "saas", "ios", "indie-dev", "monetization", "mvp", "validation", "market-research", "idea-generation", "burnout-prevention"]
+    },
+    {
+      "name": "CreativeWritingAgent",
+      "file": "agents/creative-writing.agent.md",
+      "scope": "creative-writing",
+      "description": "Fiction and game writing — dialogue, voice, worldbuilding, quest text, and revision; platform-aware brevity (mobile, PC, Deck) and string-table ready output",
+      "tags": ["creative-writing", "fiction", "dialogue", "game-writing", "narrative", "worldbuilding", "character-voice", "revision"]
+    },
+    {
+      "name": "NarrativeEngagementAgent",
+      "file": "agents/narrative-engagement.agent.md",
+      "scope": "creative-writing",
+      "description": "Critiques and improves game narrative for retention — hooks, pacing, character arcs, lore consistency, skip-friendly delivery (mobile, PC, Deck), evergreen live-ops threads",
+      "tags": ["narrative", "game-design", "retention", "pacing", "mobile-games", "pc-games", "steam-deck", "rpg", "lore", "critique", "live-ops"]
+    },
+    {
+      "name": "GameDesignAgent",
+      "file": "agents/game-design.agent.md",
+      "scope": "game-design",
+      "description": "Game systems for any platform — core loops, RPG progression, economy, retention, live-ops, ethical monetization; mobile F2P, premium PC/Steam, Steam Deck sessions",
+      "tags": ["game-design", "rpg", "f2p", "premium", "pc-games", "steam", "steam-deck", "mobile-games", "monetization", "retention", "live-ops", "progression", "unity-adjacent"]
+    },
+    {
+      "name": "UnityExpertAgent",
+      "file": "agents/unity-expert.agent.md",
+      "scope": "game-engineering",
+      "description": "Unity development — C#, URP/HDRP, Input System, Addressables, Windows/Linux builds for Steam and SteamOS, performance on Deck-class hardware",
+      "tags": ["unity", "csharp", "game-dev", "steam", "steam-deck", "linux", "windows", "urp", "hdrp", "addressables", "input-system"]
+    },
+    {
+      "name": "SteamPcDeckAgent",
+      "file": "agents/steam-pc-deck.agent.md",
+      "scope": "pc-game-distribution",
+      "description": "Steam and PC shipping — Steamworks basics, Windows/Linux depots, Steam Deck UX and compatibility, Steam Input, store page honesty; pairs with unity-expert and game-design",
+      "tags": ["steam", "steam-deck", "steamworks", "pc-games", "linux", "steamos", "distribution", "game-dev"]
+    },
+    {
+      "name": "MobileGameShippingAgent",
+      "file": "agents/mobile-game-shipping.agent.md",
+      "scope": "mobile-distribution",
+      "description": "App Store and Google Play release — ASO, submissions, privacy and age ratings, IAP compliance, beta tracks, store copy and asset briefs",
+      "tags": ["mobile-games", "app-store", "google-play", "aso", "compliance", "privacy", "iap", "submissions", "testflight", "play-console"]
+    },
+    {
+      "name": "MobileGamesMarketIntelligenceAgent",
+      "file": "agents/mobile-games-market-intelligence.agent.md",
+      "scope": "mobile-market-intelligence",
+      "description": "Mobile games market and store intelligence — iOS/Android competition, genre trends, chart/feature meta, retention and monetization patterns; emphasizes fresh research, not paid analytics DBs",
+      "tags": ["mobile-games", "app-store", "google-play", "market-research", "competition", "aso", "f2p", "retention", "monetization", "genre-trends", "game-dev"]
+    },
+    {
+      "name": "LoreIpScreeningAgent",
+      "file": "agents/lore-ip-screening.agent.md",
+      "scope": "content-compliance",
+      "description": "Heuristic screening of lore and game names for trademark, copyright, and trade-dress red flags — not legal clearance; suggests safer alternatives and counsel handoff",
+      "tags": ["trademark", "copyright", "ip", "lore", "game-dev", "legal-risk", "names", "clearance", "compliance"]
     }
   ]
 }

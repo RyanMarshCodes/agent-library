@@ -20,6 +20,7 @@ Most indie developers have instincts about domains but not deep expertise in the
 - You have talked to someone in an industry and sensed a problem but cannot articulate the product
 - You need a feature set and requirements doc before starting a project
 - You want to understand a domain well enough to have credible conversations with potential customers
+- You are defining a **game** (mobile F2P, Steam RPG, Deck-first, hybrid, etc.) and need a buildable feature set grounded in genre expectations and store reality — for ongoing work use `game-director`; pair with `game-design` for systems; for **iOS/Android competition and market trends** add `mobile-games-market-intelligence`; use `mobile-game-shipping` and/or `steam-pc-deck` for release depth per platform
 
 ## Required Inputs
 

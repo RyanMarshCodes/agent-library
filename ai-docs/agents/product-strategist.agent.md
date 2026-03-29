@@ -21,6 +21,7 @@ This agent exists to close the gap between "I have an idea" and "someone paid me
 - You are stuck deciding between multiple ideas
 - You want to know how the first dollar gets made — specifically
 - You are burning out on a project and need to reassess whether to continue or cut scope
+- You are evaluating a **game** (mobile F2P / hybrid, premium Steam, EA, DLC, etc.) and want ruthless validation of monetization realism, scope, and differentiation — use `game-director`; pair with `game-design` for systems depth; **`mobile-games-market-intelligence`** for iOS/Android competition and genre trends; `mobile-game-shipping` and/or `steam-pc-deck` for store/policy risk by platform
 
 ## Required Inputs
 
