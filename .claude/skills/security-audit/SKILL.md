@@ -5,9 +5,6 @@ argument-hint: "[path or component to audit — optional, defaults to full proje
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 
-Use the Read tool to read `D:/Projects/agent-configurations/ai-docs/agents/security-check.agent.md` then follow the workflow defined in that file exactly.
+Read `D:/Projects/agent-configurations/skills/claude/security-audit/SKILL.md` and follow all instructions exactly.
 
-Audit target: $ARGUMENTS
-
-Current directory: !`pwd`
-Project files (top level): !`ls -la 2>/dev/null || dir`
+$ARGUMENTS

@@ -2,10 +2,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // Resolve paths relative to repo root (3 levels up from AppHost dir)
 var repoRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", ".."));
-var agentsPath = Path.Combine(repoRoot, "ai-docs", "agents");
-var globalDocsPath = Path.Combine(repoRoot, "global");
-var backendDocsPath = Path.Combine(repoRoot, "backend");
-var frontendDocsPath = Path.Combine(repoRoot, "frontend");
+var agentsPath = Path.Combine(repoRoot, "agents");
+var globalDocsPath = Path.Combine(repoRoot, "knowledge", "global");
+var backendDocsPath = Path.Combine(repoRoot, "knowledge", "backend");
+var frontendDocsPath = Path.Combine(repoRoot, "knowledge", "frontend");
 var localAgentsPath = Path.Combine(repoRoot, ".local", "agents");
 var indexPath = Path.Combine(repoRoot, ".local", "mcp-index");
 var memoryDataPath = Path.Combine(repoRoot, ".local", "memory");
@@ -109,6 +109,8 @@ if (fetchEnabled)
         .WithEnvironment("HOST", "0.0.0.0")
         .WithEnvironment("PORT", "8000");
 
+    // Pass EndpointReference directly — string interpolation would ToString() to a bogus value.
+    // Ryan.MCP's ExternalConnectorRegistry normalizes bare http(s) URLs to …/mcp.
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__fetch",
         fetchMcp.GetEndpoint("mcp"));
 }
@@ -121,9 +123,14 @@ if (memoryEnabled)
 {
     // supergateway wraps the stdio-based memory server as HTTP/SSE.
     // mcp/memory:latest exits immediately without a stdio client — supergateway keeps it alive.
+    // OpenCode / MCP C# SDK expect Streamable HTTP at /mcp by default. Supergateway's default
+    // stdio→wire mode is SSE (/sse + /message), which causes "SSE error" in Streamable-HTTP-first clients.
     var memoryMcp = builder.AddContainer("memory-mcp", "ghcr.io/supercorp-ai/supergateway")
         .WithHttpEndpoint(name: "mcp", port: 8801, targetPort: 8000)
-        .WithArgs("--port", "8000", "--stdio", "npx -y @modelcontextprotocol/server-memory")
+        .WithArgs(
+            "--port", "8000",
+            "--outputTransport", "streamableHttp",
+            "--stdio", "npx -y @modelcontextprotocol/server-memory")
         .WithEnvironment("MEMORY_FILE_PATH", "/data/memory.json")
         .WithBindMount(source: memoryDataPath, target: "/data", isReadOnly: false);
 

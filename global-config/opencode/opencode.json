@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "~/.config/opencode/instructions/ryan-mcp-memory.md"
+  ],
+  "mcp": {
+    "ryan-mcp": {
+      "type": "remote",
+      "url": "http://localhost:8787/mcp",
+      "enabled": true,
+      "timeout": 120000,
+      "oauth": false
+    }
+  }
+}

@@ -24,6 +24,7 @@ builder.Services.AddHttpClient("fetch", client =>
 
 // Core services
 builder.Services.AddSingleton<ExternalConnectorRegistry>();
+builder.Services.AddSingleton<ExternalMcpClientService>();
 builder.Services.AddSingleton<DocumentIngestionCoordinator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<DocumentIngestionCoordinator>());
 builder.Services.AddSingleton<AgentIngestionCoordinator>();

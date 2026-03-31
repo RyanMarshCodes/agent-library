@@ -3,6 +3,7 @@
 Persistent, append-only record of issues encountered across all sessions. Newest entries first.
 
 Format per entry:
+
 - **Date** | **Agent** | **Category**
 - **Issue**: what went wrong or was unclear
 - **Resolution**: what was done and why

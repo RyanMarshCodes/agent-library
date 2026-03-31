@@ -374,6 +374,13 @@
       "scope": "content-compliance",
       "description": "Heuristic screening of lore and game names for trademark, copyright, and trade-dress red flags — not legal clearance; suggests safer alternatives and counsel handoff",
       "tags": ["trademark", "copyright", "ip", "lore", "game-dev", "legal-risk", "names", "clearance", "compliance"]
+    },
+    {
+      "name": "ACTestPlannerAgent",
+      "file": "agents/ac-test-planner.agent.md",
+      "scope": "testing",
+      "description": "Derives a structured test plan and writes unit test stubs from feature Acceptance Criteria — AC-first, language-agnostic planning before any code exists",
+      "tags": ["testing", "acceptance-criteria", "tdd", "bdd", "test-planning", "unit-tests", "stubs", "requirements", "any-stack"]
     }
   ]
 }

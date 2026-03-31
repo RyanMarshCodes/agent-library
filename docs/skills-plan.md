@@ -3,14 +3,14 @@
 **Date**: 2026-03-27
 **Status**: Planning — pending review before implementation
 
-Skills are Claude Code slash commands (`.claude/skills/<name>/SKILL.md`). They are Claude Code-specific but wrap the portable agent instruction files in `ai-docs/agents/`, so the logic stays universal.
+Skills are Claude Code slash commands (`.claude/skills/<name>/SKILL.md`). They are Claude Code-specific but wrap the portable agent instruction files in `agents/`, so the logic stays universal.
 
 ---
 
 ## Portability Strategy
 
 ```
-ai-docs/agents/*.agent.md   ← canonical, portable Markdown (any AI)
+agents/*.agent.md   ← canonical, portable Markdown (any AI)
        ↓ deployed to
 .claude/agents/*.md          ← Claude Code subagent auto-delegation
 .claude/skills/*/SKILL.md    ← Claude Code slash commands
@@ -78,7 +78,7 @@ allowed-tools: Read, Grep, Glob, Bash
 ---
 
 Read and follow the agent instructions at:
-D:\Projects\agent-configurations\ai-docs\agents\troubleshooting.agent.md
+D:\Projects\agent-configurations\agents\troubleshooting.agent.md
 
 Issue to investigate:
 $ARGUMENTS
@@ -107,4 +107,4 @@ Also needed alongside skills:
 1. **Skill scope**: global (`~/.claude/skills/`) vs. repo-local (`.claude/skills/`)? Global makes sense since these are personal project helpers.
 2. **`/new-project` detail**: how opinionated should the scaffolding be? (e.g., always Vitest for TS, or let user specify test framework?)
 3. **Stack init skills**: start with just TS + .NET (your primary stacks), or include Python/Go/React from day one?
-4. **Path references**: skills will hard-reference `ai-docs/agents/` — is the path always `D:\Projects\agent-configurations\` or should this be an env var / relative?
+4. **Path references**: skills will hard-reference `agents/` — is the path always `D:\Projects\agent-configurations\` or should this be an env var / relative?

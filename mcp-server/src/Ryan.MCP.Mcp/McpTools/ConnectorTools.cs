@@ -6,7 +6,7 @@ using Ryan.MCP.Mcp.Services;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class ConnectorTools(ExternalConnectorRegistry connectors)
+public sealed class ConnectorTools(ExternalConnectorRegistry connectors, ExternalMcpClientService externalMcp)
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -28,4 +28,25 @@ public sealed class ConnectorTools(ExternalConnectorRegistry connectors)
             }),
         }, JsonOptions);
     }
+
+    [McpServerTool(Name = "list_external_mcp_tools")]
+    [Description(
+        "List tools exposed by an enabled external MCP connector (e.g. the 'memory' knowledge-graph server). " +
+        "Use connector name from list_external_connectors, then call_external_mcp_tool to invoke a tool.")]
+    public Task<string> ListExternalMcpTools(
+        [Description("External connector name, e.g. 'memory'")] string connector,
+        CancellationToken cancellationToken = default)
+        => externalMcp.ListToolsAsync(connector, cancellationToken);
+
+    [McpServerTool(Name = "call_external_mcp_tool")]
+    [Description(
+        "Invoke a tool on an enabled external MCP connector (same URL as in appsettings ExternalConnectors). " +
+        "For the memory connector, typical tools include search_nodes, read_graph, create_entities, create_relations, add_observations. " +
+        "Use list_external_mcp_tools to discover names and schemas.")]
+    public Task<string> CallExternalMcpTool(
+        [Description("External connector name, e.g. 'memory'")] string connector,
+        [Description("Downstream tool name exactly as returned by list_external_mcp_tools")] string tool,
+        [Description("JSON object of arguments, e.g. {\"query\":\"topic\"}. Omit or use null for no arguments.")] string? argumentsJson = null,
+        CancellationToken cancellationToken = default)
+        => externalMcp.CallToolAsync(connector, tool, argumentsJson, cancellationToken);
 }

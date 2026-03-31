@@ -106,7 +106,7 @@ All of the above, plus:
 
 ### Standard Output: Project Analysis Report
 
-Written to: `ai-docs/analysis/{project-name}-{date}.md` (or returned inline if no file system access)
+Written to: `docs/analysis/{project-name}-{date}.md` (or returned inline if no file system access)
 
 Structure:
 

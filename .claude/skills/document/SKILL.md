@@ -5,9 +5,6 @@ argument-hint: "[type: readme|api|adr|runbook|onboarding|changelog — optional]
 allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 
-Use the Read tool to read `D:/Projects/agent-configurations/ai-docs/agents/documentation.agent.md` then follow the workflow defined in that file exactly.
+Read `D:/Projects/agent-configurations/skills/claude/document/SKILL.md` and follow all instructions exactly.
 
-Request: $ARGUMENTS
-
-Current directory: !`pwd`
-Project files (top level): !`ls -la 2>/dev/null || dir`
+$ARGUMENTS

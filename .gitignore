@@ -1,21 +1,91 @@
-# Generated / runtime
-.local/
-mcp-server/**/bin/
-mcp-server/**/obj/
-
-# Session logs (personal, not shared)
-ai-docs/sessions/
-
-# User-specific
+# ── .NET / MSBuild ────────────────────────────────────────────────────────────
+**/bin/
+**/obj/
 *.user
+*.suo
+*.userosscache
+*.sln.docstates
 .vs/
-.claude/settings.local.json
+**/.vs/
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+publish/
+**/publish/
 
-# Environment / secrets
+# ── Aspire / AppHost build artifacts ─────────────────────────────────────────
+mcp-server/.build-*/
+mcp-server/.apphost-stdout.txt
+mcp-server/.apphost-stderr.txt
+
+# ── Node / Bun (opencode plugin, etc.) ───────────────────────────────────────
+node_modules/
+**/node_modules/
+bun.lock
+package-lock.json
+yarn.lock
+.pnp.*
+dist/
+.next/
+.nuxt/
+.output/
+
+# ── Runtime / local state ─────────────────────────────────────────────────────
+.local/
+*.sqlite
+*.db
+
+# ── Secrets / environment ─────────────────────────────────────────────────────
 .env
 .env.*
+!.env.example
 **/appsettings.Development.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem
+secrets.json
+**/secrets.json
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ── IDE / editors ─────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/settings.local.json
+
+# ── Session logs (personal, machine-local) ────────────────────────────────────
+docs/sessions/

@@ -76,7 +76,7 @@ This agent understands the instruction formats and capabilities of:
    - Check for missing guardrails: could this agent accidentally do something destructive?
 
 5. **Register in catalog**
-   - Add entry to `ai-docs/catalog.json` with name, description, version, and path
+   - Add entry to `catalog.json` with name, description, version, and path
 
 ### When improving an existing agent
 

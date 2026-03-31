@@ -23,7 +23,7 @@ This file defines global, language-agnostic development standards for all code g
 ### Orchestration rule
 
 - **Atomic tasks** (single domain, single deliverable): handle directly — do not route through the orchestrator.
-- **Compound tasks** (two or more distinct domains, or clearly requiring multiple specialist agents): invoke `OrchestratorAgent` (`ai-docs/agents/orchestrator.agent.md`). It will decompose, route, parallelise, and aggregate.
+- **Compound tasks** (two or more distinct domains, or clearly requiring multiple specialist agents): invoke `OrchestratorAgent` (`agents/orchestrator.agent.md`). It will decompose, route, parallelise, and aggregate.
 - **Unclear scope**: use `OrchestratorAgent` to decompose before acting.
 
 When in doubt whether a task is compound: if completing it would naturally require switching mental models more than once (e.g. security + implementation + documentation), it’s compound.
@@ -47,35 +47,35 @@ When in doubt whether a task is compound: if completing it would naturally requi
 
 ---
 
-## Long-term memory (`ai-docs/`)
+## Long-term memory (`docs/`)
 
-Every project/repo should maintain its own `ai-docs/` folder as a local, personal log. This is **not** shared via version control — `ai-docs/` should be added to the project's `.gitignore` (or `~/.gitignore_global`). It exists only on your machine, scoped to that repo.
+Every project/repo should maintain its own `docs/` folder as a local, personal log. This is **not** shared via version control — `docs/` should be added to the project's `.gitignore` (or `~/.gitignore_global`). It exists only on your machine, scoped to that repo.
 
-This central config repo (`agent-configurations`) maintains its own `ai-docs/` only for sessions that work on the config repo itself. Do not log sessions from other projects here.
+This central config repo (`agent-configurations`) maintains its own `docs/` only for sessions that work on the config repo itself. Do not log sessions from other projects here.
 
-### Setting up `ai-docs/` in a new project
-If a project doesn't have an `ai-docs/` folder yet, create one using the structure defined in this repo:
-- Copy `ai-docs/sessions/_template.md` as a starting point for session summaries
-- Create `ai-docs/issues-resolutions.md` for the issues log
-- Add `ai-docs/` to `.gitignore`
+### Setting up `docs/` in a new project
+If a project doesn't have a `docs/` folder yet, create one using the structure defined in this repo:
+- Copy `docs/sessions/_template.md` as a starting point for session summaries
+- Create `docs/issues-resolutions.md` for the issues log
+- Add `docs/` to `.gitignore`
 
 ### At the start of every session
-1. Read `ai-docs/README.md` to understand the memory structure.
-2. Read `ai-docs/issues-resolutions.md` for known problems and how they were handled.
-3. Scan recent files in `ai-docs/sessions/` for relevant prior context.
+1. Read `docs/sessions/_template.md` to understand the session summary format.
+2. Read `docs/issues-resolutions.md` for known problems and how they were handled.
+3. Scan recent files in `docs/sessions/` for relevant prior context.
 
 ### At the end of every session
-1. Append any new issues and their resolutions to `ai-docs/issues-resolutions.md`.
-2. Write a session summary to `ai-docs/sessions/YYYY-MM-DD-{agent}.md` (e.g. `2026-03-17-claude.md`). If a file for that date and agent already exists, append to it rather than overwrite.
-3. Follow the required session summary structure in `ai-docs/README.md` (or start from `ai-docs/sessions/_template.md`).
+1. Append any new issues and their resolutions to `docs/issues-resolutions.md`.
+2. Write a session summary to `docs/sessions/YYYY-MM-DD-{agent}.md` (e.g. `2026-03-17-claude.md`). If a file for that date and agent already exists, append to it rather than overwrite.
+3. Follow the required session summary structure in `docs/sessions/_template.md`.
 
-### What belongs in `ai-docs/`
+### What belongs in `docs/`
 - Decisions made and their rationale
 - Non-obvious issues encountered and how they were resolved
 - Patterns observed across the codebase worth remembering
 - Open items or follow-ups for future sessions
 
-### What does NOT belong in `ai-docs/`
+### What does NOT belong in `docs/`
 - Code or configuration (those live in the codebase)
 - Things already obvious from reading the source
 - Ephemeral debugging notes with no lasting value
@@ -144,9 +144,9 @@ If a project doesn't have an `ai-docs/` folder yet, create one using the structu
 ## Code Style
 
 - Follow **latest/modern** language and framework official documentation best practices:
-  - **C#/.NET**: Microsoft official conventions → see `backend/csharp/`
-  - **React**: React Team recommendations → see `frontend/react/` (when present)
-  - **Angular**: Angular style guide → see `frontend/angular/` (when present)
+  - **C#/.NET**: Microsoft official conventions → see `knowledge/backend/code-standards/csharp/`
+  - **React**: React Team recommendations → see `knowledge/frontend/react/` (when present)
+  - **Angular**: Angular style guide → see `knowledge/frontend/angular/` (when present)
   - **Other**: Community-accepted conventions for the language/framework
 - Use consistent formatting (enforce with formatters)
 - Use meaningful variable and function names
@@ -215,16 +215,16 @@ When `ryan-mcp` is connected, **do not start reasoning from training data alone*
 | Unsure which specialist agent to use | `recommend_agent(task)` |
 | Working in a stack you haven't seen in this session | `get_context(language)` |
 | Looking for a coding standard or convention | `search_documents(query)` |
-| Recalling a past architectural decision or convention | `search_nodes(query)` |
-| Recording a new decision, convention, or pattern worth remembering | `create_entities` + `add_observations` |
+| Recalling a past architectural decision or convention | `call_external_mcp_tool` with connector `memory`, tool `search_nodes`, arguments `{"query":"..."}` |
+| Recording a new decision, convention, or pattern worth remembering | `call_external_mcp_tool` with connector `memory`, tools `create_entities` / `add_observations` / `create_relations` as needed |
 
 **`get_context` is the default entry point.** It returns the right agents and standards for your stack in one call. Call it before writing code, not after.
 
-**`search_nodes` / `create_entities` are the memory tools.** Use them to recall and persist decisions that go beyond a single session — architecture choices, team conventions, recurring patterns, known gotchas. This is separate from `ai-docs/` (which is file-based session memory); the memory graph is queryable and relational.
+**Knowledge-graph memory** lives on the external `memory` connector (`@modelcontextprotocol/server-memory` behind Aspire when `Projects:Memory:Enabled` is true). Ryan.MCP does **not** expose those tool names at the top level; invoke them through **`call_external_mcp_tool`**. Use `list_external_mcp_tools` with `connector: "memory"` to confirm names and schemas against your running server. This is separate from `docs/` (file-based session memory); the graph is queryable and relational.
 
 ### Fallback (MCP not running or not connected)
 
-Fall back to the agent library at `ai-docs/agents/` and standards at `global/`, `backend/`, and `frontend/` directly. Use `recommend_agent`-style reasoning manually: read the catalog at `ai-docs/catalog.json`, find the best-matching agent, load it.
+Fall back to the agent library at `agents/` and standards at `knowledge/global/`, `knowledge/backend/`, and `knowledge/frontend/` directly. Use `recommend_agent`-style reasoning manually: read the catalog at `catalog.json`, find the best-matching agent, load it.
 
 ### MCP tool reference
 
@@ -238,16 +238,17 @@ Fall back to the agent library at `ai-docs/agents/` and standards at `global/`, 
 | `list_standards(tier?, language?)` | Browse indexed standards documents |
 | `read_document(tier, path)` | Fetch full content of a standards document |
 | `search_documents(query)` | Search across all standards content |
-| `search_nodes(query)` | Query the persistent knowledge graph (memory) |
-| `create_entities` | Add entities to the knowledge graph |
-| `add_observations` | Attach facts to existing graph entities |
-| `open_nodes(names)` | Load full entity detail from the graph |
+| `list_external_connectors` | Show configured external MCP connectors (URLs, enabled flag) |
+| `list_external_mcp_tools(connector)` | List downstream tools for an enabled connector (e.g. `memory`) |
+| `call_external_mcp_tool(connector, tool, argumentsJson?)` | Invoke a downstream MCP tool; `argumentsJson` is a JSON object string |
+
+**Memory connector (`connector` = `memory`)** — tools from `@modelcontextprotocol/server-memory` (typical names): `create_entities`, `create_relations`, `add_observations`, `delete_entities`, `delete_observations`, `delete_relations`, `read_graph`, `search_nodes`, `open_nodes`. Example: `call_external_mcp_tool` with `connector` `memory`, `tool` `search_nodes`, `argumentsJson` `{"query":"authentication"}`.
 
 ### Standards Precedence
 
 The MCP server applies standards in this order:
-1. `global/` — official language/framework standards (official tier)
-2. `backend/` — backend standards (organization tier)
-3. `frontend/` — frontend standards (project tier)
+1. `knowledge/global/` — official language/framework standards (official tier)
+2. `knowledge/backend/` — backend standards (organization tier)
+3. `knowledge/frontend/` — frontend standards (project tier)
 
 When rules conflict, the most specific rule wins.

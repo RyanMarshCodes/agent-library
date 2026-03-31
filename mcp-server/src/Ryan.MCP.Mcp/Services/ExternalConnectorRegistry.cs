@@ -44,6 +44,25 @@ public sealed class ExternalConnectorRegistry : IDisposable
         }
     }
 
+    /// <summary>
+    /// Returns the enabled connector with the given name (case-insensitive), if any.
+    /// </summary>
+    public bool TryGetEnabled(string name, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out ExternalMcpConnectorOptions? connector)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            connector = null;
+            return false;
+        }
+
+        lock (_gate)
+        {
+            connector = _enabled.FirstOrDefault(c =>
+                string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
+            return connector != null;
+        }
+    }
+
     public void Dispose() => _onChange?.Dispose();
 
     private void Refresh(McpOptions? options)
@@ -55,7 +74,12 @@ public sealed class ExternalConnectorRegistry : IDisposable
 
         var configured = options.ExternalConnectors
             .Where(x => !string.IsNullOrWhiteSpace(x.Name))
-            .Select(x => ApplyOverrides(x, overrides))
+            .Select(x =>
+            {
+                var c = ApplyOverrides(x, overrides);
+                NormalizeBareHttpMcpEndpoint(c);
+                return c;
+            })
             .ToList();
 
         var enabled = configured.Where(x => x.Enabled).ToList();
@@ -87,5 +111,42 @@ public sealed class ExternalConnectorRegistry : IDisposable
         }
 
         return clone;
+    }
+
+    /// <summary>
+    /// Aspire <c>GetEndpoint</c> overrides are often <c>http://host:port</c> with no path. HTTP MCP gateways
+    /// (e.g. supergateway streamable mode) serve at <c>/mcp</c>. Without this, <c>list_external_connectors</c>
+    /// and the bridge client target the wrong URL (404).
+    /// </summary>
+    private static void NormalizeBareHttpMcpEndpoint(ExternalMcpConnectorOptions connector)
+    {
+        if (!string.Equals(connector.Transport, "http", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(connector.Endpoint))
+        {
+            return;
+        }
+
+        if (!Uri.TryCreate(connector.Endpoint, UriKind.Absolute, out var uri))
+        {
+            return;
+        }
+
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+        {
+            return;
+        }
+
+        var path = uri.AbsolutePath.TrimEnd('/');
+        if (path.Length > 0 && path != "/")
+        {
+            return;
+        }
+
+        var authority = uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.UriEscaped).TrimEnd('/');
+        connector.Endpoint = $"{authority}/mcp";
     }
 }
