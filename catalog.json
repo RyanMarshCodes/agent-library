@@ -257,6 +257,13 @@
       "tags": ["cli", "build-tools", "code-generators", "ide-extensions", "dx", "tooling"]
     },
     {
+      "name": "LogForensicsAgent",
+      "file": "agents/log-forensics.agent.md",
+      "scope": "debugging",
+      "description": "Analyzes exported logs to reconstruct incident timelines, isolate probable root causes, and map findings back to code and configuration",
+      "tags": ["logs", "incident-response", "root-cause-analysis", "observability", "forensics", "any-stack"]
+    },
+    {
       "name": "TroubleshootingAgent",
       "file": "agents/troubleshooting.agent.md",
       "scope": "debugging",

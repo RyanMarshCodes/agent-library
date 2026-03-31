@@ -1,7 +1,9 @@
 using System.Reflection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Ryan.MCP.Mcp.Configuration;
 using Ryan.MCP.Mcp.Services;
+using Ryan.MCP.Mcp.Services.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,15 +32,53 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<DocumentIngestionC
 builder.Services.AddSingleton<AgentIngestionCoordinator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<AgentIngestionCoordinator>());
 builder.Services.AddSingleton<FileManagementService>();
+builder.Services.AddSingleton(sp =>
+{
+    var opts = sp.GetRequiredService<IOptions<McpOptions>>().Value;
+    var cs = opts.MemoryStore.ConnectionString;
+    var builder = new NpgsqlDataSourceBuilder(cs);
+    return builder.Build();
+});
+builder.Services.AddSingleton<IMemoryStore, PostgresMemoryStore>();
+builder.Services.AddSingleton<MemoryMigrationRunner>();
 
 // MCP Protocol (tools, resources, prompts discovered via attributes)
+// Stateless = true needed for remote MCP clients (OpenCode) that don't maintain session state
+#pragma warning disable MCP9004
 builder.Services.AddMcpServer()
-    .WithHttpTransport()
+    .WithHttpTransport(options =>
+    {
+        options.Stateless = true;
+    })
     .WithToolsFromAssembly(Assembly.GetExecutingAssembly())
     .WithPromptsFromAssembly(Assembly.GetExecutingAssembly())
     .WithResourcesFromAssembly(Assembly.GetExecutingAssembly());
+#pragma warning restore MCP9004
 
 var app = builder.Build();
+
+// Ensure memory schema exists before handling requests.
+using (var scope = app.Services.CreateScope())
+{
+    var runner = scope.ServiceProvider.GetRequiredService<MemoryMigrationRunner>();
+    await runner.RunAsync().ConfigureAwait(false);
+}
+
+// Error handling for MCP endpoint - catches JSON parse errors before they crash the server
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (System.Text.Json.JsonException ex) when (context.Request.Path.StartsWithSegments("/mcp"))
+    {
+        app.Logger.LogWarning(ex, "MCP endpoint received malformed JSON request");
+        context.Response.StatusCode = 400;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("""{"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error"}}""");
+    }
+});
 
 app.UseStaticFiles();
 
@@ -61,6 +101,37 @@ app.MapGet("/health", () => Results.Ok(new
     service = "Ryan.MCP.Mcp",
     utc = DateTime.UtcNow,
 }));
+
+app.MapGet("/health/live", () => Results.Ok(new
+{
+    status = "alive",
+    service = "Ryan.MCP.Mcp",
+    utc = DateTime.UtcNow,
+}));
+
+app.MapGet("/health/ready", async (
+    AgentIngestionCoordinator agents,
+    DocumentIngestionCoordinator docs,
+    IMemoryStore memoryStore,
+    CancellationToken ct) =>
+{
+    var (memoryAvailable, memoryMessage) = await memoryStore.CheckAvailabilityAsync(ct).ConfigureAwait(false);
+    var agentReady = agents.Snapshot.TotalAgents > 0;
+    var docReady = docs.Snapshot.TotalDocuments >= 0;
+    var ready = memoryAvailable && agentReady && docReady;
+
+    return Results.Ok(new
+    {
+        status = ready ? "ready" : "not_ready",
+        checks = new
+        {
+            memory = new { ok = memoryAvailable, message = memoryMessage },
+            agents = new { ok = agentReady, count = agents.Snapshot.TotalAgents },
+            documents = new { ok = docReady, count = docs.Snapshot.TotalDocuments },
+        },
+        utc = DateTime.UtcNow,
+    });
+});
 
 // ─── REST API for management UI ───────────────────────────────────────────────
 

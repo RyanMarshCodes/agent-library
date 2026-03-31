@@ -1,0 +1,93 @@
+name: mcp-smoke
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ryan_memory
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 8810:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ryan_memory"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build MCP server
+        run: dotnet build mcp-server/src/Ryan.MCP.Mcp/Ryan.MCP.Mcp.csproj --configuration Release
+
+      - name: Start MCP server
+        env:
+          ASPNETCORE_URLS: http://localhost:8787
+          McpOptions__Knowledge__OfficialPath: ${{ github.workspace }}/knowledge/global
+          McpOptions__Knowledge__OrganizationPath: ${{ github.workspace }}/knowledge/backend
+          McpOptions__Knowledge__ProjectPath: ${{ github.workspace }}/knowledge/frontend
+          McpOptions__Knowledge__IndexPath: ${{ github.workspace }}/.local/mcp-index
+          McpOptions__Agents__LocalPath: ${{ github.workspace }}/.local/agents
+          McpOptions__Agents__LibraryPath: ${{ github.workspace }}/agents
+          McpOptions__MemoryStore__ConnectionString: Host=localhost;Port=8810;Database=ryan_memory;Username=postgres;Password=postgres;Timeout=15;Command Timeout=30
+        run: |
+          nohup dotnet run --project mcp-server/src/Ryan.MCP.Mcp/Ryan.MCP.Mcp.csproj > mcp.log 2>&1 &
+          for i in {1..30}; do
+            if curl -sf http://localhost:8787/health/live > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -sf http://localhost:8787/health/live
+          curl -sf http://localhost:8787/health/ready
+
+      - name: MCP smoke calls
+        run: |
+          call_mcp() {
+            curl -sS -X POST http://localhost:8787/mcp \
+              -H "Accept: application/json, text/event-stream" \
+              -H "Content-Type: application/json" \
+              -d "$1"
+          }
+
+          echo "tools/list"
+          call_mcp '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | tee /tmp/tools.txt
+          grep -q "memory_recall" /tmp/tools.txt
+
+          echo "memory_status"
+          call_mcp '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"memory_status","arguments":{}}}' | tee /tmp/status.txt
+          grep -q "\"available\":true" /tmp/status.txt
+
+          echo "memory_persist"
+          call_mcp '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"memory_persist","arguments":{"entityName":"ci-smoke-memory","entityType":"concept","observations":["CI smoke memory write"]}}}' | tee /tmp/persist.txt
+          grep -q "\"status\":\"saved\"" /tmp/persist.txt
+
+          echo "memory_recall"
+          call_mcp '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"memory_recall","arguments":{"query":"ci-smoke-memory","maxResults":5}}}' | tee /tmp/recall.txt
+          grep -q "ci-smoke-memory" /tmp/recall.txt
+
+          echo "get_context"
+          call_mcp '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"get_context","arguments":{"language":"csharp","task":"write tests"}}}' | tee /tmp/context.txt
+          grep -q "recommendedAgents" /tmp/context.txt
+
+      - name: Print logs on failure
+        if: failure()
+        run: |
+          echo "===== mcp.log ====="
+          cat mcp.log || true

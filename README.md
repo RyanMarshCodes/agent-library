@@ -76,6 +76,14 @@ When working on any project, AI agents should:
 4. Follow global standards from root `AGENTS.md`
 5. Write a session summary to `docs/sessions/` when the session ends
 
+## Operational Preflight
+
+- Validate effective OpenCode config precedence:
+  - `opencode debug config`
+  - `opencode mcp list --print-logs --log-level DEBUG`
+- Validate agent/catalog and memory-contract consistency:
+  - `pwsh ./scripts/validate-agent-references.ps1`
+
 ## Contributing
 
 To add new languages/frameworks or update conventions:

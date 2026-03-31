@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ public sealed partial class ExternalMcpClientService(
     ILoggerFactory loggerFactory,
     ILogger<ExternalMcpClientService> logger)
 {
-    private static readonly JsonSerializerOptions JsonWriteOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonWriteOptions = new();
 
     [GeneratedRegex(@"\$\{env:([^}]+)\}", RegexOptions.CultureInvariant)]
     private static partial Regex EnvPlaceholderRegex();
@@ -40,8 +41,16 @@ public sealed partial class ExternalMcpClientService(
 
         try
         {
+            var sw = Stopwatch.StartNew();
             await using var client = await CreateClientAsync(connector, endpointUri, cancellationToken).ConfigureAwait(false);
             var tools = await client.ListToolsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            sw.Stop();
+            logger.LogInformation(
+                "External connector tools listed: connector={Connector} endpoint={Endpoint} toolCount={ToolCount} durationMs={DurationMs}",
+                connectorName,
+                endpointUri,
+                tools.Count,
+                sw.ElapsedMilliseconds);
             return JsonSerializer.Serialize(new
             {
                 connector = connectorName,
@@ -51,6 +60,11 @@ public sealed partial class ExternalMcpClientService(
         }
         catch (Exception ex)
         {
+            logger.LogWarning(
+                ex,
+                "External connector tools listing failed: connector={Connector} endpoint={Endpoint} outcome=failed",
+                connectorName,
+                endpointUri);
             logger.LogWarning(ex, "ListTools failed for external connector {Connector}", connectorName);
             return JsonSerializer.Serialize(new
             {
@@ -107,13 +121,32 @@ public sealed partial class ExternalMcpClientService(
 
         try
         {
+            var sw = Stopwatch.StartNew();
             await using var client = await CreateClientAsync(connector, endpointUri, cancellationToken).ConfigureAwait(false);
+            logger.LogDebug(
+                "Calling external tool: connector={Connector} endpoint={Endpoint} tool={Tool}",
+                connectorName,
+                endpointUri,
+                toolName);
             var result = await client.CallToolAsync(toolName, args, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
+            sw.Stop();
+            logger.LogInformation(
+                "External tool call completed: connector={Connector} endpoint={Endpoint} tool={Tool} outcome=success durationMs={DurationMs}",
+                connectorName,
+                endpointUri,
+                toolName,
+                sw.ElapsedMilliseconds);
             return FormatCallToolResult(result);
         }
         catch (Exception ex)
         {
+            logger.LogWarning(
+                ex,
+                "External tool call failed: connector={Connector} endpoint={Endpoint} tool={Tool} outcome=failed",
+                connectorName,
+                endpointUri,
+                toolName);
             logger.LogWarning(ex, "CallTool failed for {Connector}/{Tool}", connectorName, toolName);
             return JsonSerializer.Serialize(new
             {
@@ -127,6 +160,8 @@ public sealed partial class ExternalMcpClientService(
         Uri endpointUri,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("Creating MCP client for {Connector} at {Endpoint}", connector.Name, endpointUri);
+
         var transportOpts = new HttpClientTransportOptions
         {
             Endpoint = endpointUri,
@@ -146,8 +181,18 @@ public sealed partial class ExternalMcpClientService(
             ProtocolVersion = "2025-06-18",
         };
 
-        return await McpClient.CreateAsync(transport, clientOptions, loggerFactory, cancellationToken: cancellationToken)
+        logger.LogInformation(
+            "Attempting MCP client create: connector={Connector} endpoint={Endpoint} protocolVersion={ProtocolVersion} transportMode={TransportMode}",
+            connector.Name,
+            endpointUri,
+            clientOptions.ProtocolVersion,
+            transportOpts.TransportMode);
+        
+        var client = await McpClient.CreateAsync(transport, clientOptions, loggerFactory, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
+            
+        logger.LogInformation("Successfully created MCP client for {Connector}", connector.Name);
+        return client;
     }
 
     private static bool TryCreateEndpointUri(

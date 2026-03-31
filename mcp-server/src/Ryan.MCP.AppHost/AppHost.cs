@@ -9,7 +9,9 @@ var frontendDocsPath = Path.Combine(repoRoot, "knowledge", "frontend");
 var localAgentsPath = Path.Combine(repoRoot, ".local", "agents");
 var indexPath = Path.Combine(repoRoot, ".local", "mcp-index");
 var memoryDataPath = Path.Combine(repoRoot, ".local", "memory");
+var memoryPostgresDataPath = Path.Combine(repoRoot, ".local", "postgres-memory");
 Directory.CreateDirectory(memoryDataPath);
+Directory.CreateDirectory(memoryPostgresDataPath);
 
 var mcpServer = builder.AddProject<Projects.Ryan_MCP_Mcp>("mcp-server")
     .WithEnvironment("McpOptions__Knowledge__ProjectSlug", "ryan-mcp")
@@ -21,6 +23,21 @@ var mcpServer = builder.AddProject<Projects.Ryan_MCP_Mcp>("mcp-server")
     .WithEnvironment("McpOptions__Agents__LibraryPath", agentsPath)
     .WithEnvironment("McpOptions__Ingestion__WatchForChanges", "true")
     .WithEnvironment("McpOptions__Ingestion__AutoIngestOnStartup", "true");
+
+var memoryPostgresEnabled = builder.Configuration["Projects:MemoryPostgres:Enabled"]?.ToLower() != "false";
+if (memoryPostgresEnabled)
+{
+    var memoryPostgres = builder.AddContainer("memory-postgres", "postgres:16-alpine")
+        .WithEnvironment("POSTGRES_DB", "ryan_memory")
+        .WithEnvironment("POSTGRES_USER", "postgres")
+        .WithEnvironment("POSTGRES_PASSWORD", "postgres")
+        .WithEndpoint(name: "postgres", port: 8810, targetPort: 5432)
+        .WithBindMount(source: memoryPostgresDataPath, target: "/var/lib/postgresql/data", isReadOnly: false);
+
+    mcpServer.WithEnvironment("McpOptions__MemoryStore__Provider", "postgres")
+        .WithEnvironment("McpOptions__MemoryStore__ConnectionString", "Host=localhost;Port=8810;Database=ryan_memory;Username=postgres;Password=postgres;Timeout=15;Command Timeout=30")
+        .WithEnvironment("McpOptions__MemoryStore__CommandTimeoutSeconds", "30");
+}
 
 // ── Remote HTTP connectors (no containers — zero machine overhead) ────────────
 //
@@ -115,9 +132,7 @@ if (fetchEnabled)
         fetchMcp.GetEndpoint("mcp"));
 }
 
-// Memory MCP — persistent knowledge graph stored across sessions. Use it to
-// remember architecture decisions, team conventions, tech debt notes, etc.
-// No auth needed. Data persists in a Docker volume.
+// Legacy Memory MCP (stdio wrapper) — disabled by default now that postgres memory is native in Ryan.MCP.
 var memoryEnabled = builder.Configuration["Projects:Memory:Enabled"]?.ToLower() == "true";
 if (memoryEnabled)
 {

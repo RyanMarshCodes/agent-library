@@ -7,8 +7,16 @@ public class McpOptions
     public KnowledgeOptions Knowledge { get; set; } = new();
     public IngestionOptions Ingestion { get; set; } = new();
     public AgentOptions? Agents { get; set; }
+    public MemoryStoreOptions MemoryStore { get; set; } = new();
     public List<ExternalMcpConnectorOptions> ExternalConnectors { get; set; } = [];
     public Dictionary<string, string> ExternalConnectorEndpointOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+public class MemoryStoreOptions
+{
+    public string Provider { get; set; } = "postgres";
+    public string ConnectionString { get; set; } = "Host=localhost;Port=8810;Database=ryan_memory;Username=postgres;Password=postgres";
+    public int CommandTimeoutSeconds { get; set; } = 30;
 }
 
 public class KnowledgeOptions

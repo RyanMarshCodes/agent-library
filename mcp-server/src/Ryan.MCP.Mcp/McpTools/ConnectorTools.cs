@@ -8,7 +8,7 @@ namespace Ryan.MCP.Mcp.McpTools;
 [McpServerToolType]
 public sealed class ConnectorTools(ExternalConnectorRegistry connectors, ExternalMcpClientService externalMcp)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "list_external_connectors")]
     [Description("List all configured external MCP connectors (e.g. Azure DevOps, GitHub, Docker) and whether they are enabled.")]
