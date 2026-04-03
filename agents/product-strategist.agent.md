@@ -1,6 +1,7 @@
 ---
 name: "Product Strategist"
 description: "Generates and ruthlessly validates profitable app/SaaS ideas for indie developers — filters for realistic build time, real monetization paths, and fastest route to first revenue"
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "product-strategy"
 tags: ["product", "saas", "ios", "indie-dev", "monetization", "mvp", "validation", "market-research", "idea-generation"]
 ---

@@ -2,7 +2,7 @@
 name: backend-developer
 description: "Use this agent when building server-side APIs, microservices, and backend systems that require robust architecture, scalability planning, and production-ready implementation."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: sonnet
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "backend"
 tags: ["nodejs", "python", "go", "api", "microservices", "backend", "polyglot"]
 ---

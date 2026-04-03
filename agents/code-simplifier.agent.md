@@ -1,3 +1,11 @@
+---
+name: "Code Simplifier Agent"
+description: "A specialized agent for simplifying and cleaning code without changing functionality."
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+scope: "refactoring"
+tags: ["simplification", "readability", "refactoring", "any-stack"]
+---
+
 # Code Simplifier Agent
 
 A specialized agent for simplifying and cleaning code without changing functionality.

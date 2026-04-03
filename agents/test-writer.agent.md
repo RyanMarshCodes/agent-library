@@ -1,6 +1,7 @@
 ---
 name: "Test Writer"
 description: "Test writing specialist for unit, integration, and end-to-end tests across any stack"
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "testing"
 tags: ["testing", "unit-tests", "integration-tests", "e2e", "any-stack"]
 ---

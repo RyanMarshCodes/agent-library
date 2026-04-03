@@ -12,7 +12,7 @@ public sealed partial class FetchTools(IHttpClientFactory httpClientFactory, ILo
     private const int DefaultMaxLength = 50_000;
     private const int AbsoluteMaxLength = 200_000;
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "fetch")]
     [Description(

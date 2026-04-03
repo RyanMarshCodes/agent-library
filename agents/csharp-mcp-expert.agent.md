@@ -1,7 +1,7 @@
 ---
 description: "Expert assistant for developing Model Context Protocol (MCP) servers in C#"
 name: "C# MCP Server Expert"
-model: GPT-4.1
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "backend"
 tags: ["csharp", "mcp", "dotnet", "aspnetcore", "tools", "prompts", "resources"]
 ---

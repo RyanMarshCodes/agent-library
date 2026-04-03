@@ -29,6 +29,7 @@ mcp-servers:
     # The 'ApiKey' prefix is required by Elastic
     env:
       AUTH_HEADER: ApiKey ${{ secrets.ELASTIC_API_KEY }}
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "observability"
 tags: ["elasticsearch", "observability", "rag", "vector-search", "security", "o11y"]
 ---

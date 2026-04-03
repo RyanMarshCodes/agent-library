@@ -4,6 +4,8 @@ using Npgsql;
 using Ryan.MCP.Mcp.Configuration;
 using Ryan.MCP.Mcp.Services;
 using Ryan.MCP.Mcp.Services.Memory;
+using Ryan.MCP.Mcp.Services.ModelMapping;
+using Ryan.MCP.Mcp.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +22,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddHttpClient("fetch", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
-    client.DefaultRequestHeaders.UserAgent.ParseAdd(
-        "Ryan.MCP/1.0 (MCP fetch tool; +https://github.com/RyanMarshCodes/agent-library)");
+    var slug = builder.Configuration["McpOptions:Knowledge:ProjectSlug"] ?? "mcp-server";
+    client.DefaultRequestHeaders.UserAgent.ParseAdd($"{slug}/1.0 (MCP fetch tool)");
 });
 
 // Core services
@@ -31,7 +33,19 @@ builder.Services.AddSingleton<DocumentIngestionCoordinator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<DocumentIngestionCoordinator>());
 builder.Services.AddSingleton<AgentIngestionCoordinator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<AgentIngestionCoordinator>());
-builder.Services.AddSingleton<FileManagementService>();
+builder.Services.AddSingleton<IStorageService>(sp =>
+{
+    var options = sp.GetRequiredService<McpOptions>();
+    var logger = sp.GetRequiredService<ILogger<FileStorageService>>();
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    var logger2 = sp.GetRequiredService<ILogger<AzureBlobStorageService>>();
+    
+    return options.Storage.Provider.ToLowerInvariant() switch
+    {
+        "azure" => new AzureBlobStorageService(options, logger2),
+        _ => new FileStorageService(options, env, logger)
+    };
+});
 builder.Services.AddSingleton(sp =>
 {
     var opts = sp.GetRequiredService<IOptions<McpOptions>>().Value;
@@ -41,6 +55,8 @@ builder.Services.AddSingleton(sp =>
 });
 builder.Services.AddSingleton<IMemoryStore, PostgresMemoryStore>();
 builder.Services.AddSingleton<MemoryMigrationRunner>();
+builder.Services.AddSingleton<IModelMappingStore, PostgresModelMappingStore>();
+builder.Services.AddSingleton<ModelMappingSyncService>();
 
 // MCP Protocol (tools, resources, prompts discovered via attributes)
 // Stateless = true needed for remote MCP clients (OpenCode) that don't maintain session state
@@ -63,6 +79,34 @@ using (var scope = app.Services.CreateScope())
     var runner = scope.ServiceProvider.GetRequiredService<MemoryMigrationRunner>();
     await runner.RunAsync().ConfigureAwait(false);
 }
+
+// Sync model mappings from agent frontmatter after ingestion completes.
+// Runs in background — non-blocking.
+_ = Task.Run(async () =>
+{
+    // Wait for agent ingestion to finish (it runs as a hosted service)
+    var agentCoordinator = app.Services.GetRequiredService<AgentIngestionCoordinator>();
+    var maxWait = TimeSpan.FromSeconds(30);
+    var waited = TimeSpan.Zero;
+    while (agentCoordinator.Snapshot.TotalAgents == 0 && waited < maxWait)
+    {
+        await Task.Delay(500).ConfigureAwait(false);
+        waited += TimeSpan.FromMilliseconds(500);
+    }
+
+    try
+    {
+        var syncService = app.Services.GetRequiredService<ModelMappingSyncService>();
+        var result = await syncService.SyncAsync().ConfigureAwait(false);
+        app.Logger.LogInformation(
+            "Model mapping sync: {Synced} synced, {Partial} partial, {Skipped} skipped",
+            result.Synced, result.PartiallyParsed, result.Skipped);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Model mapping sync failed on startup (non-fatal)");
+    }
+});
 
 // Error handling for MCP endpoint - catches JSON parse errors before they crash the server
 app.Use(async (context, next) =>
@@ -203,7 +247,7 @@ app.MapPost("/api/agents/ingest", async (AgentIngestionCoordinator agents, Cance
     return Results.Ok(new { status = "ok", s.UpdatedUtc, s.TotalAgents, s.ByScope });
 });
 
-app.MapPost("/api/agents/upload", async (HttpRequest request, FileManagementService files, AgentIngestionCoordinator agents, CancellationToken ct) =>
+app.MapPost("/api/agents/upload", async (HttpRequest request, IStorageService storage, AgentIngestionCoordinator agents, CancellationToken ct) =>
 {
     if (!request.HasFormContentType)
     {
@@ -217,7 +261,7 @@ app.MapPost("/api/agents/upload", async (HttpRequest request, FileManagementServ
     foreach (var file in form.Files)
     {
         await using var stream = file.OpenReadStream();
-        var (success, message, filePath) = await files.SaveAgentAsync(file.FileName, stream, ct).ConfigureAwait(false);
+        var (success, message, filePath) = await storage.SaveAgentAsync(file.FileName, stream, ct).ConfigureAwait(false);
         if (success)
         {
             uploaded.Add(new { file.FileName, message });
@@ -236,9 +280,9 @@ app.MapPost("/api/agents/upload", async (HttpRequest request, FileManagementServ
     return Results.Ok(new { uploaded, failed });
 });
 
-app.MapDelete("/api/agents/{fileName}", async (string fileName, FileManagementService files, AgentIngestionCoordinator agents, CancellationToken ct) =>
+app.MapDelete("/api/agents/{fileName}", async (string fileName, IStorageService storage, AgentIngestionCoordinator agents, CancellationToken ct) =>
 {
-    var (success, message) = files.DeleteAgent(fileName);
+    var (success, message) = storage.DeleteAgent(fileName);
     if (!success)
     {
         return Results.NotFound(new { error = message });
@@ -277,7 +321,7 @@ app.MapPost("/api/documents/ingest", async (DocumentIngestionCoordinator docs, C
     return Results.Ok(new { status = "ok", s.UpdatedUtc, s.TotalDocuments, s.ByTier });
 });
 
-app.MapPost("/api/documents/{tier}/upload", async (string tier, HttpRequest request, FileManagementService files, DocumentIngestionCoordinator docs, CancellationToken ct) =>
+app.MapPost("/api/documents/{tier}/upload", async (string tier, HttpRequest request, IStorageService storage, DocumentIngestionCoordinator docs, CancellationToken ct) =>
 {
     if (!request.HasFormContentType)
     {
@@ -291,7 +335,7 @@ app.MapPost("/api/documents/{tier}/upload", async (string tier, HttpRequest requ
     foreach (var file in form.Files)
     {
         await using var stream = file.OpenReadStream();
-        var (success, message, filePath) = await files.SaveDocumentAsync(tier, file.FileName, stream, ct).ConfigureAwait(false);
+        var (success, message, filePath) = await storage.SaveDocumentAsync(tier, file.FileName, stream, ct).ConfigureAwait(false);
         if (success)
         {
             uploaded.Add(new { file.FileName, message });
@@ -310,9 +354,9 @@ app.MapPost("/api/documents/{tier}/upload", async (string tier, HttpRequest requ
     return Results.Ok(new { tier, uploaded, failed });
 });
 
-app.MapDelete("/api/documents/{tier}/{*relativePath}", async (string tier, string relativePath, FileManagementService files, DocumentIngestionCoordinator docs, CancellationToken ct) =>
+app.MapDelete("/api/documents/{tier}/{*relativePath}", async (string tier, string relativePath, IStorageService storage, DocumentIngestionCoordinator docs, CancellationToken ct) =>
 {
-    var (success, message) = files.DeleteDocument(tier, relativePath);
+    var (success, message) = storage.DeleteDocument(tier, relativePath);
     if (!success)
     {
         return Results.NotFound(new { error = message });

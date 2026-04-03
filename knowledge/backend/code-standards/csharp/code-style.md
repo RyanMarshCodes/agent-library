@@ -263,3 +263,114 @@ namespace MyNamespace;
 
 public class MyClass { }
 ```
+
+---
+
+## Program.cs / Hosting Configuration
+
+Keep `Program.cs` minimal — it should only wire things up, not contain logic.
+
+### Preferred Pattern: Extension Methods per Layer
+
+```csharp
+// Program.cs - ~15 lines max
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddAzureKeyVault(builder.Environment);
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApi(builder.Environment);
+
+var app = builder.Build();
+
+app.UseApi();
+app.UseSwagger();
+app.UseCors();
+
+app.Run();
+```
+
+### Extension Method Structure
+
+Each layer registers its own services:
+
+```csharp
+// Application/DependencyInjection.cs
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        
+        return services;
+    }
+}
+
+// Infrastructure/DependencyInjection.cs
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext<AppDbContext>(opts =>
+            opts.UseSqlServer(configuration.GetConnectionString("Default")));
+            
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        
+        return services;
+    }
+}
+
+// Api/DependencyInjection.cs
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApi(this IServiceCollection services, IHostEnvironment environment)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+        services.AddCors("AllowAll");
+        
+        return services;
+    }
+    
+    public static WebApplication UseApi(this WebApplication app)
+    {
+        app.UseSwagger();
+        app.UseCors();
+        
+        return app;
+    }
+}
+```
+
+### Rules
+
+| Rule | Rationale |
+|------|-----------|
+| One `Add<Layer>()` call per project | Clear ownership |
+| One `Use<Feature>()` call per feature | Easy to scan |
+| No inline configuration in Program.cs | Use IOptions pattern |
+| No business logic in Program.cs | It's infrastructure wiring only |
+| Group related registrations together | Easier to find and modify |
+
+### Anti-Patterns to Avoid
+
+```csharp
+// BAD - Program.cs is too busy
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<Db>(...);
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddMediatR(...);
+builder.Services.AddAutoMapper(...);
+builder.Services.AddFluentValidation(...);
+builder.Services.AddAuthentication(...);
+builder.Services.AddAuthorization(...);
+builder.Services.AddSwaggerGen(...);
+// ... 100 more lines
+
+// GOOD - Delegate to extension methods
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApi(builder.Environment);
+```

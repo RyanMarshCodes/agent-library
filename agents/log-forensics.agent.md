@@ -1,6 +1,7 @@
 ---
 name: "LogForensicsAgent"
 description: "Analyzes exported logs to reconstruct incident timelines, isolate probable root causes, and map findings back to code and configuration."
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "debugging"
 tags: ["logs", "incident-response", "root-cause-analysis", "observability", "forensics", "any-stack"]
 ---

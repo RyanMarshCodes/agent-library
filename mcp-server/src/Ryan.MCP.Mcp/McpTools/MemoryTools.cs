@@ -215,12 +215,6 @@ public sealed class MemoryTools(
                     backend = "postgres",
                     message = "Memory backend is not available.",
                     lastError = message,
-                    efficiency = new
-                    {
-                        recall = "Use memory_recall with specific queries, not at every session start",
-                        persist = "Store only what matters for future sessions, not temporary notes",
-                        read = "Avoid memory_read unless you need full context review",
-                    }
                 }, JsonOptions);
             }
 
@@ -228,12 +222,6 @@ public sealed class MemoryTools(
             {
                 available = true,
                 backend = "postgres",
-                efficiency = new
-                {
-                    recall = "Use memory_recall with specific queries, not at every session start",
-                    persist = "Store only what matters for future sessions, not temporary notes",
-                    read = "Avoid memory_read unless you need full context review",
-                }
             }, JsonOptions);
         }
         catch (Exception ex)

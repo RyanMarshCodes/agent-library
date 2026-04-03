@@ -2,7 +2,7 @@
 name: graphql-architect
 description: "Use this agent when designing or evolving GraphQL schemas across microservices, implementing federation architectures, or optimizing query performance in distributed graphs."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "api-design"
 tags: ["graphql", "federation", "apollo", "schema-design", "api", "microservices"]
 ---

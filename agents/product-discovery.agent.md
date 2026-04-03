@@ -1,6 +1,7 @@
 ---
 name: "Product Discovery"
 description: "Takes a rough domain idea and acts as a domain expert — researches the space, maps competitor gaps, identifies the underserved niche, and produces a complete feature set and requirements spec ready to build"
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "product-strategy"
 tags: ["product", "discovery", "requirements", "feature-definition", "domain-research", "competitor-analysis", "user-stories", "spec", "indie-dev", "saas", "ios"]
 ---

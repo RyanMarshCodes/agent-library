@@ -1,5 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// PROJECT_SLUG drives all naming: project slug, DB name, and container prefixes.
+// Override via env var to run multiple isolated instances on the same machine.
+// e.g. set PROJECT_SLUG=work-mcp on your work laptop.
+var projectSlug = Environment.GetEnvironmentVariable("PROJECT_SLUG") ?? "ryan-mcp";
+var dbName = projectSlug.Replace("-", "_"); // ryan-mcp → ryan_mcp, work-mcp → work_mcp
+
 // Resolve paths relative to repo root (3 levels up from AppHost dir)
 var repoRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", ".."));
 var agentsPath = Path.Combine(repoRoot, "agents");
@@ -14,7 +20,7 @@ Directory.CreateDirectory(memoryDataPath);
 Directory.CreateDirectory(memoryPostgresDataPath);
 
 var mcpServer = builder.AddProject<Projects.Ryan_MCP_Mcp>("mcp-server")
-    .WithEnvironment("McpOptions__Knowledge__ProjectSlug", "ryan-mcp")
+    .WithEnvironment("McpOptions__Knowledge__ProjectSlug", projectSlug)
     .WithEnvironment("McpOptions__Knowledge__OfficialPath", globalDocsPath)
     .WithEnvironment("McpOptions__Knowledge__OrganizationPath", backendDocsPath)
     .WithEnvironment("McpOptions__Knowledge__ProjectPath", frontendDocsPath)
@@ -28,14 +34,16 @@ var memoryPostgresEnabled = builder.Configuration["Projects:MemoryPostgres:Enabl
 if (memoryPostgresEnabled)
 {
     var memoryPostgres = builder.AddContainer("memory-postgres", "postgres:16-alpine")
-        .WithEnvironment("POSTGRES_DB", "ryan_memory")
+        .WithEnvironment("POSTGRES_DB", dbName)
         .WithEnvironment("POSTGRES_USER", "postgres")
         .WithEnvironment("POSTGRES_PASSWORD", "postgres")
         .WithEndpoint(name: "postgres", port: 8810, targetPort: 5432)
-        .WithBindMount(source: memoryPostgresDataPath, target: "/var/lib/postgresql/data", isReadOnly: false);
+        .WithBindMount(source: memoryPostgresDataPath, target: "/var/lib/postgresql/data", isReadOnly: false)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-memory-postgres");
 
     mcpServer.WithEnvironment("McpOptions__MemoryStore__Provider", "postgres")
-        .WithEnvironment("McpOptions__MemoryStore__ConnectionString", "Host=localhost;Port=8810;Database=ryan_memory;Username=postgres;Password=postgres;Timeout=15;Command Timeout=30")
+        .WithEnvironment("McpOptions__MemoryStore__ConnectionString", $"Host=localhost;Port=8810;Database={dbName};Username=postgres;Password=postgres;Timeout=15;Command Timeout=30")
         .WithEnvironment("McpOptions__MemoryStore__CommandTimeoutSeconds", "30");
 }
 
@@ -57,7 +65,9 @@ var sequentialThinkingEnabled = builder.Configuration["Projects:SequentialThinki
 if (sequentialThinkingEnabled)
 {
     var sequentialThinking = builder.AddContainer("sequentialthinking", "mcp/sequentialthinking:latest")
-        .WithEndpoint(name: "mcp", port: 8788, targetPort: 8788);
+        .WithEndpoint(name: "mcp", port: 8788, targetPort: 8788)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-sequentialthinking");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__sequential-thinking",
         sequentialThinking.GetEndpoint("mcp"));
@@ -71,7 +81,9 @@ if (azureEnabled)
 {
     var azureMcp = builder.AddContainer("azure-mcp", "mcr.microsoft.com/azure-mcp-server:latest")
         .WithEndpoint(name: "mcp", port: 8790, targetPort: 8790)
-        .WithEnvironment("AZURE_AUTH_MODE", "cli");
+        .WithEnvironment("AZURE_AUTH_MODE", "cli")
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-azure");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__azure",
         azureMcp.GetEndpoint("mcp"));
@@ -83,7 +95,9 @@ if (dockerEnabled)
 {
     var dockerMcp = builder.AddContainer("docker-mcp", "mcp/server-docker:latest")
         .WithEndpoint(name: "mcp", port: 8791, targetPort: 8791)
-        .WithBindMount(source: "/var/run/docker.sock", target: "/var/run/docker.sock", isReadOnly: true);
+        .WithBindMount(source: "/var/run/docker.sock", target: "/var/run/docker.sock", isReadOnly: true)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-docker");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__docker",
         dockerMcp.GetEndpoint("mcp"));
@@ -96,7 +110,9 @@ if (discordEnabled)
 {
     var discordMcp = builder.AddContainer("discord-mcp", "ghcr.io/saseq/discord-mcp:latest")
         .WithEndpoint(name: "mcp", port: 8792, targetPort: 8792)
-        .WithEnvironment("DISCORD_BOT_TOKEN", Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") ?? "");
+        .WithEnvironment("DISCORD_BOT_TOKEN", Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") ?? "")
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-discord");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__discord",
         discordMcp.GetEndpoint("mcp"));
@@ -109,7 +125,9 @@ if (filesystemEnabled)
 {
     var filesystemMcp = builder.AddContainer("filesystem-mcp", "mcp/server-filesystem:latest")
         .WithEndpoint(name: "mcp", port: 8793, targetPort: 8793)
-        .WithBindMount(source: repoRoot, target: "/data", isReadOnly: true);
+        .WithBindMount(source: repoRoot, target: "/data", isReadOnly: true)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-filesystem");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__filesystem",
         filesystemMcp.GetEndpoint("mcp"));
@@ -124,7 +142,9 @@ if (fetchEnabled)
     var fetchMcp = builder.AddContainer("fetch-mcp", "mcp/fetch:latest")
         .WithHttpEndpoint(name: "mcp", port: 8800, targetPort: 8000)
         .WithEnvironment("HOST", "0.0.0.0")
-        .WithEnvironment("PORT", "8000");
+        .WithEnvironment("PORT", "8000")
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-fetch");
 
     // Pass EndpointReference directly — string interpolation would ToString() to a bogus value.
     // Ryan.MCP's ExternalConnectorRegistry normalizes bare http(s) URLs to …/mcp.
@@ -147,7 +167,9 @@ if (memoryEnabled)
             "--outputTransport", "streamableHttp",
             "--stdio", "npx -y @modelcontextprotocol/server-memory")
         .WithEnvironment("MEMORY_FILE_PATH", "/data/memory.json")
-        .WithBindMount(source: memoryDataPath, target: "/data", isReadOnly: false);
+        .WithBindMount(source: memoryDataPath, target: "/data", isReadOnly: false)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-memory");
 
     mcpServer.WithEnvironment("McpOptions__ExternalConnectorEndpointOverrides__memory",
         memoryMcp.GetEndpoint("mcp"));
@@ -159,7 +181,9 @@ if (ollamaEnabled)
 {
     builder.AddContainer("ollama", "ollama/ollama:latest")
         .WithHttpEndpoint(port: 11434, targetPort: 11434)
-        .WithEnvironment("OLLAMA_HOST", "0.0.0.0:11434");
+        .WithEnvironment("OLLAMA_HOST", "0.0.0.0:11434")
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-ollama");
 }
 
 // Qdrant — vector database for semantic search (heavy, enable only if needed).
@@ -167,7 +191,9 @@ var qdrantEnabled = builder.Configuration["Projects:Qdrant:Enabled"]?.ToLower() 
 if (qdrantEnabled)
 {
     builder.AddContainer("qdrant", "qdrant/qdrant:latest")
-        .WithHttpEndpoint(port: 6333, targetPort: 6333);
+        .WithHttpEndpoint(port: 6333, targetPort: 6333)
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithContainerName($"{projectSlug}-qdrant");
 }
 
 builder.Build().Run();

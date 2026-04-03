@@ -1,6 +1,7 @@
 ---
 name: "Data Migration Specialist"
 description: "ETL patterns, expand/contract schema migrations, dual-write strategies, rollback design, and data validation for safe schema and data changes"
+model: claude-sonnet-4-6 # strong/misc — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "data"
 tags: ["migration", "etl", "schema-migration", "dual-write", "expand-contract", "data-quality", "rollback", "any-stack"]
 ---

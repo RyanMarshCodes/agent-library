@@ -1,6 +1,7 @@
 ---
 name: "Performance Profiler"
 description: "Profiling, benchmarking, hot-path identification, memory analysis, and load testing across .NET, Node.js, and browser environments"
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "performance"
 tags: ["profiling", "benchmarking", "performance", "memory", "dotnet-trace", "benchmarkdotnet", "k6", "load-testing", "any-stack"]
 ---

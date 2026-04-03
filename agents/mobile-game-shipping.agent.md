@@ -2,7 +2,7 @@
 name: mobile-game-shipping
 description: "Guides mobile game release: App Store / Play Console, ASO, screenshots and store copy, privacy and age ratings, IAP/subscription compliance, beta tracks, and pre-launch checklists. Complements mobile-developer (code) and game-design (product). For Steam/PC/Deck use steam-pc-deck."
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "mobile-distribution"
 tags:
   [

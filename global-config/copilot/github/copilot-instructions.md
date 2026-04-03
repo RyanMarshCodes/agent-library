@@ -3,6 +3,12 @@
 Follow the standards and conventions defined in the project AGENTS.md if present.
 If no project-specific AGENTS.md exists, apply the principles below.
 
+## Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/dotnet-pr` | Generate PR description: 5-bullet summary, risks + rollback, paste-ready description, reviewer focus |
+
 ## Code quality
 
 - >90% test coverage. Zero tolerance for warnings and code smells.
@@ -16,3 +22,4 @@ If no project-specific AGENTS.md exists, apply the principles below.
 - Write code that reads like a clear explanation of intent.
 
 !include "D:/Projects/agent-configurations/global-config/_shared/memory-bridge-instructions.md"
+!include "D:/Projects/agent-configurations/global-config/_shared/context-management.md"

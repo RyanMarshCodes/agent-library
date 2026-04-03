@@ -2,7 +2,7 @@
 name: microservices-architect
 description: "Use when designing distributed system architecture, decomposing monolithic applications into independent microservices, or establishing communication patterns between services at scale."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "architecture"
 tags: ["microservices", "kubernetes", "distributed-systems", "service-mesh", "cloud-native"]
 ---

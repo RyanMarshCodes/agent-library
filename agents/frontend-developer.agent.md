@@ -2,7 +2,7 @@
 name: frontend-developer
 description: "Use when building complete frontend applications across React, Vue, and Angular frameworks requiring multi-framework expertise and full-stack integration."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: sonnet
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "frontend"
 tags: ["react", "vue", "angular", "frontend", "typescript", "accessibility"]
 ---

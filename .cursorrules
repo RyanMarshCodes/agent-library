@@ -1,5 +1,11 @@
 Follow `AGENTS.md` as the canonical, global standards for this workspace.
 
+## Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/dotnet-pr` | Generate PR description: 5-bullet summary, risks + rollback, paste-ready description, reviewer focus |
+
 - Prefer the most specific rules available (nested `AGENTS.md` / folder rules).
 - If project/repo-specific rules conflict with `AGENTS.md`, follow the project/repo rules.
 - Confirm before destructive actions (deletions, large refactors/renames, migrations, force pushes).

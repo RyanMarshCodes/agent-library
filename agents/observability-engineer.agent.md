@@ -1,6 +1,7 @@
 ---
 name: "Observability Engineer"
 description: "Instruments applications with telemetry, structured/scoped logging, distributed tracing, and metrics — ensuring full observability and correlation across any stack"
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "observability"
 tags: ["observability", "telemetry", "logging", "tracing", "metrics", "opentelemetry", "new-relic", "structured-logging", "correlation", "distributed-systems", "log-levels", "any-stack"]
 ---

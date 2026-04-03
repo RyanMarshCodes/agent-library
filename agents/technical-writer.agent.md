@@ -1,6 +1,7 @@
 ---
 name: "Technical Writer"
 description: "Technical writing specialist for documentation, guides, API references, and developer-facing content across any stack"
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "documentation"
 tags: ["technical-writing", "documentation", "readme", "guides", "any-stack"]
 ---

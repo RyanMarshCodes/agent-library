@@ -2,7 +2,7 @@
 name: tooling-engineer
 description: "Use this agent when you need to build or enhance developer tools including CLIs, code generators, build tools, and IDE extensions."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: sonnet
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "tooling"
 tags: ["cli", "build-tools", "code-generators", "ide-extensions", "dx", "tooling"]
 ---

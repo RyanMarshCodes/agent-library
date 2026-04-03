@@ -1,5 +1,7 @@
 # Development Standards
 
+!include "D:/Projects/agent-configurations/global-config/_shared/context-management.md"
+
 This file defines global, language-agnostic development standards for all code generated in this project.
 
 ## Scope & precedence
@@ -19,6 +21,15 @@ This file defines global, language-agnostic development standards for all code g
 - Always verify: run the most relevant fast checks (format/lint/unit tests) and fix any issues introduced; don’t ignore failing checks.
 - Communicate decisions and trade-offs: explain “why” succinctly; call out assumptions and how to validate them.
 - Protect secrets and safety: never paste keys/tokens; avoid logging sensitive data; prefer environment variables and redaction.
+- **Detect shell before first command**: on first shell/terminal use in a session, identify the active shell — run `$PSVersionTable` (succeeds → PowerShell) or check `$SHELL`/`$0` (bash/zsh). Cache the result and use shell-appropriate syntax for the rest of the session. Never assume; never retry with a different syntax after failure — detect first.
+
+### Shell syntax reference
+
+| Shell | Detection | Path sep | Null device | Env var |
+|-------|-----------|----------|-------------|---------|
+| PowerShell | `$PSVersionTable` succeeds | `\` or `/` | `$null` / `NUL` | `$env:VAR` |
+| bash / zsh / Git Bash | `echo $SHELL` returns path | `/` | `/dev/null` | `$VAR` |
+| CMD | neither above works | `\` | `NUL` | `%VAR%` |
 
 ### Orchestration rule
 

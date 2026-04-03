@@ -1,3 +1,11 @@
+---
+name: "DocumentationAgent"
+description: "A technical writing agent that produces complete, accurate, and maintainable documentation for any project."
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+scope: "documentation"
+tags: ["documentation", "readme", "api-docs", "onboarding", "any-stack"]
+---
+
 # DocumentationAgent
 
 A technical writing agent that produces complete, accurate, and maintainable documentation for any project, new or existing, in any language or framework.

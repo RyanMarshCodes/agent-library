@@ -92,14 +92,23 @@ Create at solution root — applies to ALL projects:
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AnalysisMode>All</AnalysisMode>
-    <WarningLevel>9999</WarningLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
   </PropertyGroup>
+
+  <!-- Static Analysis Analyzers -->
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Version="*" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.Analyzers" Version="*" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Baseline legacy warnings: uncomment after initial build shows warnings -->
+  <!-- <NoWarn>$(NoWarn);CA0000</NoWarn> -->
 </Project>
 ```
 

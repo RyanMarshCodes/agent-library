@@ -1,3 +1,11 @@
+---
+name: "TroubleshootingAgent"
+description: "Expert root cause analysis and fix planning for any issue, error, or stack trace in any codebase, language, or framework."
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
+scope: "debugging"
+tags: ["troubleshooting", "debugging", "root-cause", "stack-trace", "any-stack"]
+---
+
 # TroubleshootingAgent
 
 Expert root cause analysis and fix planning for any issue, error, or stack trace in any codebase, language, or framework.

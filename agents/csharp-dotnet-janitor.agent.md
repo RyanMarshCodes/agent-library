@@ -2,6 +2,7 @@
 description: 'C#/.NET cleanup and modernization: remove dead code AND apply modern C# syntax (nullable types, pattern matching, primary constructors), improve test coverage, and add XML documentation. Use for additive quality improvement on C#/.NET codebases. Does not perform TargetFramework version migrations — use dotnet-upgrade for that.'
 name: 'C#/.NET Janitor'
 tools: [vscode/extensions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, execute/getTerminalOutput, execute/runTask, execute/createAndRunTask, execute/runTests, execute/runInTerminal, execute/testFailure, read/terminalSelection, read/terminalLastCommand, read/getTaskOutput, read/problems, read/readFile, 'github/*', 'microsoft.docs.mcp/*', edit/editFiles, search, web]
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "refactoring"
 tags: ["csharp", "dotnet", "cleanup", "modernization", "nullable-types", "refactoring"]
 ---

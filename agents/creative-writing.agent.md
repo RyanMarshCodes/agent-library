@@ -2,7 +2,7 @@
 name: creative-writing
 description: "Use for fiction, game writing, dialogue, character voice, worldbuilding, and revision. Produces and refines prose, scripts, barks, quest text, item flavor, and marketing-adjacent story copy while keeping tone and canon consistent."
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "creative-writing"
 tags:
   [

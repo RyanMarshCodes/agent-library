@@ -51,6 +51,11 @@ public class AgentEntry
     public string AbsolutePath { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the relative path from the scan root (e.g., "backend/csharp-expert.agent.md").
+    /// </summary>
+    public string RelativePath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the SHA256 checksum for change detection.
     /// </summary>
     public string ChecksumSha256 { get; set; } = string.Empty;

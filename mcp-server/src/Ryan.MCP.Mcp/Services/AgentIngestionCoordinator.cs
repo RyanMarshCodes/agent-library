@@ -91,7 +91,8 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
     }
 
     /// <summary>
-    /// Searches agents by free-text query against name, description, and tags.
+    /// Searches agents by free-text query against name, description, tags, relative path, and filename.
+    /// Returns results sorted by relevance (name matches > relative path > description > tags).
     /// </summary>
     public List<AgentEntry> SearchAgents(string query)
     {
@@ -100,14 +101,213 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
             return [];
         }
 
-        var lowerQuery = query.ToLowerInvariant();
-        return _snapshot.Agents
-            .Where(x =>
-                x.Name.Contains(lowerQuery, StringComparison.OrdinalIgnoreCase) ||
-                x.Description.Contains(lowerQuery, StringComparison.OrdinalIgnoreCase) ||
-                x.Tags.Any(t => t.Contains(lowerQuery, StringComparison.OrdinalIgnoreCase)) ||
-                x.FileName.Contains(lowerQuery, StringComparison.OrdinalIgnoreCase))
+        var terms = query.ToLowerInvariant()
+            .Split([' ', '-', '_', '/'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(t => t.Length > 1)
             .ToList();
+
+        if (terms.Count == 0)
+        {
+            return [];
+        }
+
+        var scored = _snapshot.Agents
+            .Select(agent =>
+            {
+                var nameLower = agent.Name.ToLowerInvariant();
+                var descLower = agent.Description.ToLowerInvariant();
+                var pathLower = agent.RelativePath.ToLowerInvariant();
+                var filenameLower = agent.FileName.ToLowerInvariant();
+                var tagsLower = agent.Tags.Select(t => t.ToLowerInvariant()).ToList();
+
+                var score = 0;
+
+                // Name matches: highest weight
+                foreach (var term in terms)
+                {
+                    if (nameLower.Contains(term))
+                        score += 100;
+                }
+
+                // Relative path matches
+                foreach (var term in terms)
+                {
+                    if (pathLower.Contains(term) || filenameLower.Contains(term))
+                        score += 50;
+                }
+
+                // Description matches
+                foreach (var term in terms)
+                {
+                    if (descLower.Contains(term))
+                        score += 20;
+                }
+
+                // Tag matches
+                foreach (var term in terms)
+                {
+                    if (tagsLower.Any(t => t.Contains(term)))
+                        score += 10;
+                }
+
+                return (Agent: agent, Score: score);
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.Agent.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.Agent)
+            .ToList();
+
+        return scored;
+    }
+
+    /// <summary>
+    /// Recommends agents for a given task with scoring and reasoning.
+    /// </summary>
+    public List<(AgentEntry Agent, int Score, List<string> Reasons)> RecommendAgents(string task)
+    {
+        if (string.IsNullOrWhiteSpace(task))
+        {
+            return [];
+        }
+
+        var taskLower = task.ToLowerInvariant();
+        var taskTerms = taskLower
+            .Split([' ', '-', '_', '/', ',', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(t => t.Length > 1)
+            .ToList();
+
+        var keywords = new Dictionary<string, string[]>
+        {
+            ["security"] = ["security", "audit", "vulnerability", "owasp", "penetration"],
+            ["refactoring"] = ["refactor", "simplify", "cleanup", "restructure", "tech-debt"],
+            ["testing"] = ["test", "spec", "verify", "coverage", "unittest", "integration"],
+            ["api"] = ["api", "rest", "graphql", "endpoint", "openapi", "swagger"],
+            ["database"] = ["database", "sql", "migration", "schema", "query", "postgres"],
+            ["frontend"] = ["frontend", "ui", "react", "vue", "angular", "css", "component"],
+            ["backend"] = ["backend", "server", "service", "microservice", "dotnet", "node"],
+            ["devops"] = ["devops", "docker", "kubernetes", "ci", "cd", "deploy", "azure"],
+            ["game"] = ["game", "unity", "unreal", "gaming", "narrative", "design"],
+            ["documentation"] = ["docs", "documentation", "readme", "guide", "api-doc"],
+            ["architecture"] = ["architecture", "design", "pattern", "microservices", "system"],
+        };
+
+        var scored = _snapshot.Agents
+            .Select(agent =>
+            {
+                var score = 0;
+                var reasons = new List<string>();
+                var nameLower = agent.Name.ToLowerInvariant();
+                var descLower = agent.Description.ToLowerInvariant();
+                var scopeLower = agent.Scope.ToLowerInvariant();
+                var tagsLower = agent.Tags.Select(t => t.ToLowerInvariant()).ToList();
+                var pathLower = agent.RelativePath.ToLowerInvariant();
+
+                // Direct name/description match
+                foreach (var term in taskTerms)
+                {
+                    if (nameLower.Contains(term))
+                    {
+                        score += 50;
+                        reasons.Add($"name matches '{term}'");
+                    }
+                }
+
+                foreach (var term in taskTerms)
+                {
+                    if (descLower.Contains(term))
+                    {
+                        score += 25;
+                        reasons.Add($"description mentions '{term}'");
+                    }
+                }
+
+                // Keyword-based scoring
+                foreach (var (category, keywords) in keywords)
+                {
+                    var taskHasKeyword = taskTerms.Any(t => keywords.Any(k => k.Contains(t) || t.Contains(k)));
+                    var agentMatches = tagsLower.Any(t => keywords.Any(k => k.Contains(t) || t.Contains(k))) ||
+                                      scopeLower.Contains(category) ||
+                                      nameLower.Contains(category);
+
+                    if (taskHasKeyword && agentMatches)
+                    {
+                        score += 30;
+                        reasons.Add($"relevant to {category}");
+                    }
+                }
+
+                // Scope match
+                foreach (var term in taskTerms)
+                {
+                    if (scopeLower.Contains(term))
+                    {
+                        score += 40;
+                        reasons.Add($"scope '{agent.Scope}' matches");
+                    }
+                }
+
+                // Tag match
+                foreach (var term in taskTerms)
+                {
+                    var matchingTag = tagsLower.FirstOrDefault(t => t.Contains(term));
+                    if (matchingTag != null)
+                    {
+                        score += 20;
+                        reasons.Add($"tag '{matchingTag}' matches");
+                    }
+                }
+
+                // Path/folder match
+                foreach (var term in taskTerms)
+                {
+                    if (pathLower.Contains(term))
+                    {
+                        score += 15;
+                        reasons.Add($"located in relevant folder");
+                    }
+                }
+
+                // Boost for scope match (exact)
+                if (IsScopeRelevant(taskLower, agent.Scope))
+                {
+                    score += 20;
+                }
+
+                return (Agent: agent, Score: score, Reasons: reasons);
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.Agent.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return scored;
+    }
+
+    private static bool IsScopeRelevant(string task, string scope)
+    {
+        var taskWords = task.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        var scopeKeywords = new Dictionary<string, string[]>
+        {
+            ["security-audit"] = ["security", "audit", "vulnerability", "secure", "penetration"],
+            ["refactoring"] = ["refactor", "simplify", "cleanup", "refactor"],
+            ["testing"] = ["test", "spec", "verify", "coverage", "unit", "integration"],
+            ["api-design"] = ["api", "rest", "graphql", "endpoint", "openapi"],
+            ["data"] = ["database", "sql", "schema", "query", "migration"],
+            ["frontend"] = ["frontend", "ui", "component", "css", "react", "vue", "angular"],
+            ["backend"] = ["backend", "server", "service", "api"],
+            ["devops"] = ["devops", "deploy", "ci", "cd", "docker", "kubernetes"],
+            ["game-design"] = ["game", "gaming", "design", "narrative", "level"],
+            ["documentation"] = ["docs", "documentation", "readme", "write"],
+            ["architecture"] = ["architecture", "design", "system", "pattern"],
+        };
+
+        if (scopeKeywords.TryGetValue(scope, out var keywords))
+        {
+            return taskWords.Any(t => keywords.Any(k => k.Contains(t) || t.Contains(k)));
+        }
+
+        return false;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -211,7 +411,7 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
                         var files = Directory.EnumerateFiles(rootPath, pattern, SearchOption.TopDirectoryOnly);
                         foreach (var file in files)
                         {
-                            var entry = await IngestionEntryAsync(file, cancellationToken).ConfigureAwait(false);
+                            var entry = await IngestionEntryAsync(file, rootPath, cancellationToken).ConfigureAwait(false);
                             if (entry != null)
                             {
                                 entries.Add(entry);
@@ -227,7 +427,7 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
                         var files = Directory.EnumerateFiles(rootPath, pattern, SearchOption.AllDirectories);
                         foreach (var file in files)
                         {
-                            var entry = await IngestionEntryAsync(file, cancellationToken).ConfigureAwait(false);
+                            var entry = await IngestionEntryAsync(file, rootPath, cancellationToken).ConfigureAwait(false);
                             if (entry != null)
                             {
                                 entries.Add(entry);
@@ -276,7 +476,7 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
         }
     }
 
-    private async Task<AgentEntry?> IngestionEntryAsync(string filePath, CancellationToken cancellationToken)
+    private async Task<AgentEntry?> IngestionEntryAsync(string filePath, string rootPath, CancellationToken cancellationToken)
     {
         try
         {
@@ -294,6 +494,8 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
             var scope = YamlFrontmatterParser.GetString(frontmatter, "scope", "general") ?? "general";
             var tags = YamlFrontmatterParser.GetStringList(frontmatter, "tags");
 
+            var relativePath = Path.GetRelativePath(rootPath, filePath);
+
             return new AgentEntry
             {
                 FileName = fileInfo.Name,
@@ -305,6 +507,7 @@ public sealed class AgentIngestionCoordinator : IHostedService, IDisposable
                 RawContent = content,
                 Frontmatter = frontmatter,
                 AbsolutePath = filePath,
+                RelativePath = relativePath,
                 ChecksumSha256 = checksum,
                 IndexedUtc = DateTime.UtcNow,
                 SizeBytes = fileInfo.Length,

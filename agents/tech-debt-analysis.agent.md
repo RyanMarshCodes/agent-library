@@ -1,3 +1,11 @@
+---
+name: "TechDebtAnalysisAgent"
+description: "A specialized architecture-grade agent for fast, evidence-based technical debt analysis and proposal writing."
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+scope: "architecture"
+tags: ["tech-debt", "architecture", "analysis", "refactoring", "any-stack"]
+---
+
 # TechDebtAnalysisAgent
 
 A specialized architecture-grade agent for fast, evidence-based technical debt analysis and proposal writing.

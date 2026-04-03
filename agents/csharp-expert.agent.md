@@ -2,6 +2,7 @@
 name: "C# Expert"
 description: An agent designed to assist with software development tasks for .NET projects.
 # version: 2026-01-20a
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "backend"
 tags: ["csharp", "dotnet", "net10", "best-practices", "aspnetcore"]
 ---
@@ -59,7 +60,8 @@ When invoked:
 - Secure by default (no secrets; input validate; least privilege).
 - Resilient I/O (timeouts; retry with backoff when it fits).
 - Structured logging with scopes; useful context; no log spam.
-- Use precise exceptions; don’t swallow; keep cause/context.
+- Use precise exceptions; don't swallow; keep cause/context.
+- **API documentation**: use Scalar (scalar.com) for OpenAPI UI — install `Scalar.AspNetCore`, configure with `app.MapScalarUI()`. Do not use Swagger/NSwag for new projects.
 
 ### Performance
 
@@ -116,7 +118,7 @@ When invoked:
 - **Exit code on cancel:** return non-zero (e.g., `130`).
 - **`ValueTask`:** use only when measured to help; default to `Task`.
 - **Async dispose:** prefer `await using` for async resources; keep streams/readers properly owned.
-- **No pointless wrappers:** don’t add `async/await` if you just return the task.
+- **No pointless wrappers:** don't add `async/await` if you just return the task.
 
 ## Immutability
 
@@ -196,7 +198,7 @@ When invoked:
 ### Assertions
 
 - If **FluentAssertions/AwesomeAssertions** are already used, prefer them.
-- Otherwise, use the framework’s asserts.
+- Otherwise, use the framework's asserts.
 - Use `Throws/ThrowsAsync` (or MSTest `Assert.ThrowsException`) for exceptions.
 
 ## Mocking

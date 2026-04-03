@@ -1,3 +1,11 @@
+---
+name: "Security Check Agent"
+description: "A specialized agent for performing security audits on code to identify vulnerabilities and security issues."
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+scope: "security"
+tags: ["security", "owasp", "audit", "vulnerabilities", "any-stack"]
+---
+
 # Security Check Agent
 
 A specialized agent for performing security audits on code to identify vulnerabilities and security issues.

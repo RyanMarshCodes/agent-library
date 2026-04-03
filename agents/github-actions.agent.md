@@ -2,6 +2,7 @@
 name: "GitHub Actions Expert"
 description: "GitHub Actions specialist focused on secure CI/CD workflows, action pinning, OIDC authentication, permissions least privilege, and supply-chain security"
 tools: ["codebase", "edit/editFiles", "terminalCommand", "search", "githubRepo"]
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "devops"
 tags: ["github-actions", "ci-cd", "security", "oidc", "supply-chain", "devops"]
 ---

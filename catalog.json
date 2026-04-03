@@ -145,6 +145,27 @@
       "tags": ["elasticsearch", "observability", "rag", "vector-search", "security", "o11y"]
     },
     {
+      "name": "AngularExpert",
+      "file": "agents/angular-expert.agent.md",
+      "scope": "frontend",
+      "description": "Angular development expert - modern Angular 17+ with Signals, standalone components, and best practices",
+      "tags": ["angular", "signals", "standalone-components", "frontend", "typescript"]
+    },
+    {
+      "name": "ReactExpert",
+      "file": "agents/react-expert.agent.md",
+      "scope": "frontend",
+      "description": "React development expert - React 18+, hooks, TypeScript, and modern React patterns",
+      "tags": ["react", "hooks", "typescript", "frontend", "jsx"]
+    },
+    {
+      "name": "VueExpert",
+      "file": "agents/vue-expert.agent.md",
+      "scope": "frontend",
+      "description": "Vue.js development expert - Vue 3.5+, Composition API, TypeScript, and Pinia",
+      "tags": ["vue", "composition-api", "typescript", "frontend", "pinia"]
+    },
+    {
       "name": "FrontendDeveloperAgent",
       "file": "agents/frontend-developer.agent.md",
       "scope": "frontend",

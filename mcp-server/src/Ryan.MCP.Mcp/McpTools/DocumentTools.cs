@@ -8,7 +8,7 @@ namespace Ryan.MCP.Mcp.McpTools;
 [McpServerToolType]
 public sealed class DocumentTools(DocumentIngestionCoordinator documents)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "list_standards")]
     [Description("List all indexed standards and knowledge documents by tier (official, organization, project). Returns relative file paths. Use read_document to fetch content.")]

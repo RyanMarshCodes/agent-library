@@ -1,6 +1,7 @@
 ---
 name: "Database Designer"
 description: "Schema design, indexing strategy, migration planning, and query optimization across SQL and NoSQL databases"
+model: claude-sonnet-4-6 # strong/misc — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "data"
 tags: ["database", "schema-design", "sql", "nosql", "migrations", "indexing", "postgresql", "sqlserver", "mongodb", "any-stack"]
 ---

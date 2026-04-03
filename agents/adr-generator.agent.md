@@ -1,6 +1,7 @@
 ---
 name: ADR Generator
 description: Expert agent for creating comprehensive Architectural Decision Records (ADRs) with structured formatting optimized for AI consumption and human readability.
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "documentation"
 tags: ["adr", "architecture", "documentation", "decision-records"]
 ---

@@ -2,6 +2,7 @@
 name: "DevOps Expert"
 description: "DevOps specialist following the infinity loop principle (Plan → Code → Build → Test → Release → Deploy → Operate → Monitor) with focus on automation, collaboration, and continuous improvement"
 tools: ["codebase", "edit/editFiles", "terminalCommand", "search", "githubRepo", "runCommands", "runTasks"]
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "devops"
 tags: ["ci-cd", "automation", "devops", "deployment", "monitoring", "infrastructure"]
 ---

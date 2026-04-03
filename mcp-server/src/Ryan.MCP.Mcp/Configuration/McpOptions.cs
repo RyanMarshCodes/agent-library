@@ -8,8 +8,38 @@ public class McpOptions
     public IngestionOptions Ingestion { get; set; } = new();
     public AgentOptions? Agents { get; set; }
     public MemoryStoreOptions MemoryStore { get; set; } = new();
+    public StorageOptions Storage { get; set; } = new();
     public List<ExternalMcpConnectorOptions> ExternalConnectors { get; set; } = [];
     public Dictionary<string, string> ExternalConnectorEndpointOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public List<LlmProviderOptions> LlmProviders { get; set; } = [];
+}
+
+/// <summary>
+/// An LLM provider the user has access to (e.g., OpenCode Zen, Anthropic, OpenAI, Google).
+/// Used by model recommendation tools to filter suggestions to models the user can actually reach.
+/// </summary>
+public class LlmProviderOptions
+{
+    /// <summary>Unique provider slug (e.g., "opencode-zen", "anthropic", "openai", "google").</summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Whether this provider is currently active/usable.</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Optional API base URL. Not used for routing — purely informational / future use.</summary>
+    public string? ApiBaseUrl { get; set; }
+
+    /// <summary>
+    /// API key with ${env:VAR} expansion support. Never stored in plain text — use env var references.
+    /// Not used for LLM calls (Ryan.MCP is advisory-only), but used for quota/usage API checks when available.
+    /// </summary>
+    public string? ApiKey { get; set; }
+
+    /// <summary>Models available through this provider (e.g., ["claude-opus-4-6", "claude-sonnet-4-6"]).</summary>
+    public List<string> Models { get; set; } = [];
+
+    /// <summary>Optional notes (e.g., "pay-as-you-go", "free tier", "subscription").</summary>
+    public string? Notes { get; set; }
 }
 
 public class MemoryStoreOptions
@@ -47,6 +77,13 @@ public class AgentOptions
     public string? LibraryPath { get; set; }
 
     public string? ProjectPath { get; set; }
+}
+
+public class StorageOptions
+{
+    public string Provider { get; set; } = "file"; // "file" or "azure"
+    public string? ConnectionString { get; set; }
+    public string ContainerName { get; set; } = "mcp-storage";
 }
 
 public class ExternalMcpConnectorOptions

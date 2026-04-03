@@ -2,7 +2,7 @@
 name: game-design
 description: "Designs game systems for any platform — core loops, RPG progression, economy, retention, live-ops, and ethical monetization. Covers mobile F2P, premium PC/Steam, Steam Deck sessions, and hybrid models; not engine programming."
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "game-design"
 tags:
   [

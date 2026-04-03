@@ -3,6 +3,12 @@
   "instructions": [
     "~/.config/opencode/instructions/ryan-mcp-memory.md"
   ],
+  "command": {
+    "quota": {
+      "description": "Check OpenCode usage quota (opencode_usage CLI)",
+      "template": "Summarize my OpenCode / Zen usage from this output:\n\n!`python -m opencode_usage run`"
+    }
+  },
   "mcp": {
     "ryan-mcp": {
       "type": "remote",

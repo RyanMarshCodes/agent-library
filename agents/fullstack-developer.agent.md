@@ -2,7 +2,7 @@
 name: fullstack-developer
 description: "Use this agent when you need to build complete features spanning database, API, and frontend layers together as a cohesive unit."
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: sonnet
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "fullstack"
 tags: ["fullstack", "frontend", "backend", "database", "api", "end-to-end"]
 ---

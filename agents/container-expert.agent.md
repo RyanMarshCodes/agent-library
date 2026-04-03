@@ -1,6 +1,7 @@
 ---
 name: "Container Expert"
 description: "Multi-stage Dockerfiles, docker-compose for local development, Kubernetes manifests, and container image optimization"
+model: gemini-3.1-pro # strong/infra — alt: claude-sonnet-4-6, gpt-5.3-codex
 scope: "devops"
 tags: ["docker", "kubernetes", "containers", "docker-compose", "k8s", "helm", "image-optimization", "devops"]
 ---

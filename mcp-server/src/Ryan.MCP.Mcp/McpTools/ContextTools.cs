@@ -9,7 +9,7 @@ namespace Ryan.MCP.Mcp.McpTools;
 [McpServerToolType]
 public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentIngestionCoordinator documents)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "get_context")]
     [Description("""
@@ -72,25 +72,23 @@ public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentInges
             agents = new
             {
                 count = relevantAgents.Count,
-                items = relevantAgents.Take(8).Select(a => new
+                items = relevantAgents.Take(6).Select(a => new
                 {
                     a.Name,
                     a.Description,
                     a.Scope,
                     a.Tags,
-                    activate = $"use_agent(\"{a.Name}\")",
                 }),
                 seeAll = "list_agents()",
             },
             standards = new
             {
                 count = relevantDocs.Count,
-                items = relevantDocs.Select(d => new
+                items = relevantDocs.Take(5).Select(d => new
                 {
                     d.Tier,
                     d.RelativePath,
                     read = $"read_document(\"{d.Tier}\", \"{d.RelativePath}\")",
-                    load = $"use_standard(\"{d.Tier}\", \"{d.RelativePath}\")",
                 }),
                 seeAll = "list_standards()",
             },
@@ -105,35 +103,19 @@ public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentInges
         IReadOnlyList<IngestionEntry> relevantDocs)
     {
         var sb = new StringBuilder();
-        sb.Append("# Quick Start");
-        if (language != null) sb.Append($" — {language}");
-        if (task != null) sb.Append($" — {task}");
-        sb.AppendLine();
-        sb.AppendLine();
 
         if (relevantAgents.Count > 0)
         {
             var top = relevantAgents[0];
-            sb.AppendLine($"**Step 1 — Activate your agent**: `use_agent(\"{top.Name}\")`");
-            sb.AppendLine($"> {top.Description}");
-            sb.AppendLine();
+            sb.AppendLine($"1. `get_agent(\"{top.Name}\")` — {top.Description}");
         }
 
         if (relevantDocs.Count > 0)
         {
-            sb.AppendLine("**Step 2 — Load relevant standards**:");
-            foreach (var doc in relevantDocs.Take(5))
-                sb.AppendLine($"- `read_document(\"{doc.Tier}\", \"{doc.RelativePath}\")`");
-            sb.AppendLine();
+            foreach (var doc in relevantDocs.Take(3))
+                sb.AppendLine($"2. `read_document(\"{doc.Tier}\", \"{doc.RelativePath}\")`");
         }
 
-        if (relevantAgents.Count > 1)
-        {
-            sb.AppendLine("**Other available agents**:");
-            foreach (var a in relevantAgents.Skip(1).Take(4))
-                sb.AppendLine($"- `{a.Name}` — {a.Description}");
-        }
-
-        return sb.ToString();
+        return sb.ToString().TrimEnd();
     }
 }

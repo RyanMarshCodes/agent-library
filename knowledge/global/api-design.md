@@ -158,3 +158,16 @@ Every API must have:
 - Human-readable documentation for non-obvious flows (auth handshakes, webhooks, async operations)
 - A changelog for breaking changes
 - Example requests and responses for every endpoint
+
+### API Documentation Tools
+
+**Preferred tool**: [Scalar](https://scalar.com/) — modern, fast, beautiful OpenAPI explorer with curl generation, request history, and dark mode. Supports .NET, Java, Python, Go, Node.js, React, Rust, and more.
+
+**For .NET projects**:
+- Use Scalar (not Swagger/NSwag) when scaffolding new APIs
+- Install via `Scalar.AspNetCore` NuGet package
+- Configure in `Program.cs` with `app.MapScalarUI()`
+
+**Alternative** (if Scalar unavailable): Swashbuckle/NSwag for older projects, but prefer Scalar for new work.
+
+**For other stacks**: Use Scalar if a native integration exists, otherwise the community-standard tool for the framework.

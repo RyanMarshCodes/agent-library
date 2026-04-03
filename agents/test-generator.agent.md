@@ -1,6 +1,7 @@
 ---
 name: "Test Generator Agent"
 description: "Generates comprehensive, idiomatic test suites by reading existing project tests first and matching conventions exactly."
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "testing"
 tags: ["testing", "unit-tests", "tdd", "conventions", "any-stack"]
 ---

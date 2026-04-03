@@ -2,16 +2,17 @@ using System.ComponentModel;
 using System.Text.Json;
 using ModelContextProtocol.Server;
 using Ryan.MCP.Mcp.Services;
+using Ryan.MCP.Mcp.Services.ModelMapping;
 
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class AgentTools(AgentIngestionCoordinator agents)
+public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingStore modelMappings)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "list_agents")]
-    [Description("List all available agents, skills, and instructions indexed by this MCP server. Returns name, description, scope, tags, and format for each.")]
+    [Description("List all available agents, skills, and instructions indexed by this MCP server. Returns name, description, scope, tags, and format for each. Example: call without args to get all, or with scope='backend' to filter.")]
     public string ListAgents(
         [Description("Filter by scope (e.g. 'refactoring', 'security', 'testing'). Omit to list all.")] string? scope = null,
         [Description("Comma-separated tags to filter by (e.g. 'csharp,dotnet'). Omit to list all.")] string? tags = null)
@@ -32,8 +33,6 @@ public sealed class AgentTools(AgentIngestionCoordinator agents)
                 a.Description,
                 a.Scope,
                 a.Tags,
-                a.Format,
-                a.FileName,
             }),
         }, JsonOptions);
     }
@@ -60,16 +59,14 @@ public sealed class AgentTools(AgentIngestionCoordinator agents)
             agent.Scope,
             agent.Tags,
             agent.Format,
-            agent.FileName,
             agent.RawContent,
-            agent.Frontmatter,
             agent.IndexedUtc,
         }, JsonOptions);
     }
 
     [McpServerTool(Name = "search_agents")]
-    [Description("Search agents by keyword across name, description, tags, and file name. Use this to find the right agent for a task.")]
-    public string SearchAgents([Description("Search query, e.g. 'security audit' or 'csharp refactor'")] string query)
+    [Description("Search agents by keyword across name, description, tags, and filename. Returns scored results sorted by relevance. Use to find the right agent for a task — try multiple terms like 'csharp test' or 'api design'.")]
+    public string SearchAgents([Description("Search query, e.g. 'security audit' or 'csharp refactor' or 'react frontend'")] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -87,8 +84,6 @@ public sealed class AgentTools(AgentIngestionCoordinator agents)
                 a.Description,
                 a.Scope,
                 a.Tags,
-                a.Format,
-                a.FileName,
             }),
         }, JsonOptions);
     }
@@ -125,13 +120,15 @@ public sealed class AgentTools(AgentIngestionCoordinator agents)
     }
 
     [McpServerTool(Name = "recommend_agent")]
-    [Description("Get the best agent recommendation for a specific task. Explains why the agent is recommended and how to activate it as your active persona.")]
-    public string RecommendAgent([Description("Task description, e.g. 'security audit of my C# API' or 'refactor this class' or 'write unit tests'")] string task)
+    [Description("Get the best agent recommendation for a specific task. Returns score, reasons, model recommendation, and activation instructions. Best for: 'fix my C# bug', 'design an API', 'migrate to .NET 8', 'write tests for my react component'.")]
+    public async Task<string> RecommendAgent(
+        [Description("Task description in natural language, e.g. 'security audit of my C# API' or 'refactor this class' or 'write unit tests'")] string task,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(task))
             return JsonSerializer.Serialize(new { error = "task description is required" });
 
-        var results = agents.SearchAgents(task);
+        var results = agents.RecommendAgents(task);
         if (results.Count == 0)
         {
             return JsonSerializer.Serialize(new
@@ -142,28 +139,39 @@ public sealed class AgentTools(AgentIngestionCoordinator agents)
         }
 
         var top = results.First();
+
+        // Look up model mapping for the top recommendation
+        var mapping = await modelMappings.GetAsync(top.Agent.Name, cancellationToken).ConfigureAwait(false);
+
         return JsonSerializer.Serialize(new
         {
             task,
             recommendation = new
             {
-                top.Name,
-                top.Description,
-                top.Scope,
-                top.Tags,
-                howToActivate = new
-                {
-                    asPrompt = $"use_agent(\"{top.Name}\")",
-                    asSystemPrompt = $"use_agent_as_system(\"{top.Name}\")",
-                    readFirst = $"get_agent(\"{top.Name}\")",
-                    asResource = $"agents://{top.Name}",
-                },
+                top.Agent.Name,
+                top.Agent.Description,
+                top.Agent.Scope,
+                top.Agent.Tags,
+                top.Score,
+                top.Reasons,
+                model = mapping is not null
+                    ? new
+                    {
+                        primary = mapping.PrimaryModel,
+                        mapping.Tier,
+                        provider = mapping.PrimaryProvider,
+                        alternatives = new[] { mapping.AltModel1, mapping.AltModel2 }
+                            .Where(a => a is not null),
+                    }
+                    : null,
+                fetch = $"get_agent(\"{top.Agent.Name}\")",
             },
             alternatives = results.Skip(1).Take(3).Select(a => new
             {
-                a.Name,
-                a.Description,
-                activate = $"use_agent(\"{a.Name}\")",
+                a.Agent.Name,
+                a.Agent.Description,
+                a.Score,
+                fetch = $"get_agent(\"{a.Agent.Name}\")",
             }),
         }, JsonOptions);
     }

@@ -2,7 +2,7 @@
 name: game-director
 description: "Single entry point for game vision and cross-cutting decisions (mobile, PC, Steam, Steam Deck) — aligns narrative, systems, monetization, store shipping, and IP risk by delegating to specialist agents. Brief strategic framing only; never replaces specialists for prose, economy design, store copy, or code."
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "game-orchestration"
 tags:
   [

@@ -11,6 +11,7 @@ tools:
   - search/searchResults
   - search/usages
   - vscode/vscodeAPI
+model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
 scope: "planning"
 tags: ["planning", "architecture", "analysis", "strategy", "requirements", "read-only"]
 ---

@@ -11,7 +11,7 @@ namespace Ryan.MCP.Mcp.McpTools;
 [McpServerToolType]
 public sealed class SpecTools(DocumentIngestionCoordinator documents, ILogger<SpecTools> logger)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "parse_openapi")]
     [Description(

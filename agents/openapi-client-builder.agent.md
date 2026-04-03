@@ -1,6 +1,7 @@
 ---
 name: "OpenAPI Client Builder"
 description: "Reads OpenAPI/Swagger/AsyncAPI specs and designs typed API clients with appropriate abstraction, auth handling, retry policies, and error strategies"
+model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "api-design"
 tags: ["openapi", "swagger", "asyncapi", "api-client", "codegen", "nswag", "kiota", "http-client", "typescript", "csharp", "any-stack"]
 ---

@@ -2,7 +2,7 @@
 name: steam-pc-deck
 description: "Steam and PC game shipping — Steamworks partner basics, build depots (Windows/Linux), Steam Deck compatibility and UX, Steam Input, Proton vs native Linux, store page and capsule copy at a high level. Not legal advice; pairs with lore-ip-screening for naming and unity-expert for builds."
 tools: Read, Write, Edit, Glob, Grep
-model: sonnet
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "pc-game-distribution"
 tags:
   [

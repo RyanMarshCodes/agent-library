@@ -2,6 +2,7 @@
 description: 'Stack-agnostic cleanup: remove dead code, unused dependencies, duplicate logic, and over-engineering. Purely subtractive — does not add new patterns, modernize language features, or bump framework versions. Use for any language or stack.'
 name: 'Universal Janitor'
 tools: [vscode/extensions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, execute/getTerminalOutput, execute/runTask, execute/createAndRunTask, execute/runTests, execute/runInTerminal, execute/testFailure, read/terminalSelection, read/terminalLastCommand, read/getTaskOutput, read/problems, read/readFile, browser, 'github/*', 'microsoft.docs.mcp/*', edit/editFiles, search, web]
+model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
 scope: "refactoring"
 tags: ["cleanup", "dead-code", "tech-debt", "simplification", "any-stack"]
 ---
