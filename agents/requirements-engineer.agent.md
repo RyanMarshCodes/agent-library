@@ -1,6 +1,6 @@
 ---
 name: requirements-engineer
-description: Turns feature ideas into structured requirements, acceptance criteria and delivery notes for the Unitra product
+description: Turns feature ideas into structured requirements, acceptance criteria and delivery notes
 model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: product-strategy
 tags: ["requirements", "acceptance-criteria", "spec", "product", "feature-definition", "delivery", "any-stack"]

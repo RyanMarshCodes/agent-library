@@ -2,6 +2,8 @@
 description: "Executes structured workflows (Debug, Express, Main, Loop) with strict correctness and maintainability. Enforces an improved tool usage policy, never assumes facts, prioritizes reproducible solutions, self-correction, and edge-case handling."
 name: "Blueprint Mode"
 model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
+scope: "general"
+tags: ["workflow", "structured", "correctness", "debugging"]
 ---
 
 # Blueprint Mode v39

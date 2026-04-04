@@ -25,6 +25,16 @@ public sealed class DiffAnalysisTools
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
         baseBranch ??= "main";
 
+        // Sanitize baseBranch to prevent command injection — only allow safe git ref characters
+        if (!System.Text.RegularExpressions.Regex.IsMatch(baseBranch, @"^[a-zA-Z0-9_./@-]+$"))
+        {
+            return JsonSerializer.Serialize(new
+            {
+                status = "error",
+                message = "Invalid base branch name. Only alphanumeric characters, dots, underscores, slashes, @, and hyphens are allowed."
+            }, JsonOptions);
+        }
+
         try
         {
             var (diffArgs, statArgs) = mode.ToLowerInvariant() switch

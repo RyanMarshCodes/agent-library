@@ -85,9 +85,11 @@ public sealed class MemoryMigrationRunner(
 
         if (exists is null)
         {
-            // CREATE DATABASE cannot run inside a transaction and doesn't support parameters
+            // CREATE DATABASE cannot run inside a transaction and doesn't support parameters.
+            // Escape the identifier to prevent SQL injection via database name.
+            var safeName = targetDb.Replace("\"", "\"\"");
             await using var createCmd = new NpgsqlCommand(
-                $"CREATE DATABASE \"{targetDb}\";", conn);
+                $"CREATE DATABASE \"{safeName}\";", conn);
             await createCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Created database '{Database}'", targetDb);
         }

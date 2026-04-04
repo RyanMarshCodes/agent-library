@@ -34,6 +34,16 @@ public sealed class FrontendBuildTools
         var pm = DetectPackageManager(workDir);
         var script = buildScript ?? DetectBuildScript(workDir);
 
+        // Sanitize script name to prevent command injection — only allow safe npm script characters
+        if (!System.Text.RegularExpressions.Regex.IsMatch(script, @"^[a-zA-Z0-9:_-]+$"))
+        {
+            return JsonSerializer.Serialize(new
+            {
+                status = "error",
+                message = "Invalid build script name. Only alphanumeric characters, colons, underscores, and hyphens are allowed."
+            }, JsonOptions);
+        }
+
         var attempts = new List<BuildAttempt>();
         var attempt = 1;
 

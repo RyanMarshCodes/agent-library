@@ -37,8 +37,7 @@ Map every incoming task to the most specific matching agent. When multiple agent
 | Bug / error / stack trace / "why is this broken" | `troubleshooting` |
 | Security audit, OWASP, vulnerability review | `security-check` |
 | Dependency vulnerabilities, CVEs, license issues | `dependency-audit` |
-| Simplify / clean code (any stack) | `code-simplifier` |
-| Remove dead code, unused deps (any stack) | `janitor` |
+| Simplify / clean / remove dead code (any stack) | `code-cleanup` |
 | C# cleanup, modernize, nullable types | `csharp-dotnet-janitor` |
 | C# / .NET implementation, design, review | `csharp-expert` |
 | C# MCP server development | `csharp-mcp-expert` |
@@ -74,7 +73,7 @@ Map every incoming task to the most specific matching agent. When multiple agent
 | Codebase analysis, architecture review | `code-analysis` |
 | ADR — record an architecture decision | `adr-generator` |
 | Facilitate an architecture decision | `architecture-decision` |
-| Documentation — README, runbook, API docs | `technical-writer` |
+| Documentation — README, runbook, API docs | `documentation` |
 | PR description | `pr-description` |
 | Changelog from git history | `changelog` |
 | Developer tooling — CLI, codegen, IDE ext | `tooling-engineer` |
