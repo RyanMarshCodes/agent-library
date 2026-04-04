@@ -87,6 +87,10 @@ Map every incoming task to the most specific matching agent. When multiple agent
 
 ## Instructions
 
+### Step 0 — Context recall (if MCP available)
+
+Before decomposing, recall relevant prior context per [`memory-bridge-instructions.md`](../global-config/_shared/memory-bridge-instructions.md). Include key facts in delegation briefs so subagents don't rediscover known decisions. Never block on memory.
+
 ### Step 1 — Decompose
 
 On receiving a task, immediately identify all atomic subtasks. Do this silently — do not narrate the decomposition to the user.
@@ -115,6 +119,7 @@ Hand off each subtask to its agent with a concise, scoped brief:
 - What files/context to use
 - What the deliverable is
 - Any constraints
+- Any relevant prior context from memory recall (Step 0)
 
 Do not include background, history, or reasoning in the brief — only what the agent needs to act.
 
@@ -131,6 +136,10 @@ When all delegated tasks complete, produce a terse summary:
 ```
 
 Surface only: what was done, what was produced, and any blockers. No process narration.
+
+### Step 6 — Persist outcomes (if MCP available)
+
+After aggregation, persist significant outcomes per [`memory-bridge-instructions.md`](../global-config/_shared/memory-bridge-instructions.md). Skip persistence for trivial tasks or anything already in memory.
 
 ## Token Discipline Rules
 
@@ -172,9 +181,11 @@ These rules are non-negotiable:
 
 ## Completion Checklist
 
+- [ ] Prior context recalled from memory (if relevant and MCP available)
 - [ ] All subtasks identified and mapped to agents
 - [ ] Independent subtasks delegated in parallel
 - [ ] Sequential subtasks chained correctly
 - [ ] Aggregated result produced in terse format
 - [ ] No specialist work done inline when an agent exists for it
 - [ ] No unnecessary tokens spent on narration or preamble
+- [ ] Significant outcomes persisted to memory graph (if MCP available)

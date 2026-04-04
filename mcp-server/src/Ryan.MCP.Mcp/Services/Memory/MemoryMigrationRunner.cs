@@ -1,9 +1,12 @@
+using Microsoft.Extensions.Options;
 using Npgsql;
+using Ryan.MCP.Mcp.Configuration;
 
 namespace Ryan.MCP.Mcp.Services.Memory;
 
 public sealed class MemoryMigrationRunner(
     NpgsqlDataSource dataSource,
+    IOptions<McpOptions> options,
     ILogger<MemoryMigrationRunner> logger)
 {
     public async Task RunAsync(CancellationToken cancellationToken = default)
@@ -29,6 +32,8 @@ public sealed class MemoryMigrationRunner(
         {
             try
             {
+                await EnsureDatabaseExistsAsync(cancellationToken).ConfigureAwait(false);
+
                 await using var conn = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
                 foreach (var sqlPath in sqlFiles)
@@ -50,5 +55,41 @@ public sealed class MemoryMigrationRunner(
         }
 
         throw new InvalidOperationException("Unable to connect to postgres backend after retries.", lastError);
+    }
+
+    /// <summary>
+    /// Connects to the default 'postgres' database and creates the target database if it doesn't exist.
+    /// This handles the case where POSTGRES_DB only applies on first data-directory init but the
+    /// PROJECT_SLUG (and therefore DB name) may change between runs.
+    /// </summary>
+    private async Task EnsureDatabaseExistsAsync(CancellationToken cancellationToken)
+    {
+        var cs = options.Value.MemoryStore.ConnectionString;
+        var csBuilder = new NpgsqlConnectionStringBuilder(cs);
+        var targetDb = csBuilder.Database;
+
+        if (string.IsNullOrEmpty(targetDb) || targetDb.Equals("postgres", StringComparison.OrdinalIgnoreCase))
+        {
+            return; // already targeting the default DB, nothing to create
+        }
+
+        // Connect to the 'postgres' maintenance database to run CREATE DATABASE
+        csBuilder.Database = "postgres";
+        await using var adminSource = new NpgsqlDataSourceBuilder(csBuilder.ToString()).Build();
+        await using var conn = await adminSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var checkCmd = new NpgsqlCommand(
+            "SELECT 1 FROM pg_database WHERE datname = @db;", conn);
+        checkCmd.Parameters.AddWithValue("db", targetDb);
+        var exists = await checkCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+
+        if (exists is null)
+        {
+            // CREATE DATABASE cannot run inside a transaction and doesn't support parameters
+            await using var createCmd = new NpgsqlCommand(
+                $"CREATE DATABASE \"{targetDb}\";", conn);
+            await createCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("Created database '{Database}'", targetDb);
+        }
     }
 }

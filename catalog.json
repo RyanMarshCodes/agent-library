@@ -1,29 +1,22 @@
 {
   "libraryName": "central-agent-library-seed",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Portable custom agent definitions — stack-agnostic, designed to work across any language, framework, or AI coding platform.",
   "namingConvention": "kebab-case + .agent.md (e.g., code-analysis.agent.md). The JSON `name` field stays stable (PascalCase + Agent suffix) for tooling and delegation.",
   "agents": [
     {
-      "name": "OrchestratorAgent",
-      "file": "agents/orchestrator.agent.md",
-      "scope": "orchestration",
-      "description": "Token-efficient task orchestrator — decomposes requests, routes each subtask to the right specialist agent, parallelizes where possible, and returns aggregated results. Never does specialist work itself.",
-      "tags": ["orchestration", "delegation", "routing", "multi-agent", "efficiency", "any-stack"]
-    },
-    {
-      "name": "GameDirectorAgent",
-      "file": "agents/game-director.agent.md",
-      "scope": "game-orchestration",
-      "description": "Game vision hub — core decisions, sequencing, and delegation across narrative, systems design, mobile and Steam/PC shipping, IP screening, Unity/mobile implementation; brief strategic framing only",
-      "tags": ["game-design", "mobile-games", "pc-games", "steam-deck", "orchestration", "delegation", "vision", "production", "multi-agent", "rpg", "f2p"]
-    },
-    {
       "name": "AccessibilityExpert",
       "file": "agents/accessibility.agent.md",
       "scope": "accessibility",
-      "description": "Expert assistant for web accessibility (WCAG 2.1/2.2), inclusive UX, and a11y testing",
+      "description": "Web accessibility specialist — WCAG 2.1/2.2 conformance, inclusive UX, semantic HTML, ARIA, keyboard operability, and a11y testing",
       "tags": ["wcag", "a11y", "accessibility", "inclusive-ux", "any-stack"]
+    },
+    {
+      "name": "ACTestPlannerAgent",
+      "file": "agents/ac-test-planner.agent.md",
+      "scope": "testing",
+      "description": "Derives a structured test plan and writes unit test stubs from feature Acceptance Criteria — AC-first, language-agnostic planning before any code exists",
+      "tags": ["testing", "acceptance-criteria", "tdd", "bdd", "test-planning", "unit-tests", "stubs", "requirements", "any-stack"]
     },
     {
       "name": "ADRGeneratorAgent",
@@ -35,15 +28,22 @@
     {
       "name": "AIAgentExpert",
       "file": "agents/ai-agent-expert.agent.md",
-      "scope": "agent-authoring",
+      "scope": "tooling",
       "description": "Designs, writes, and audits AI agent instruction files for any platform",
-      "tags": ["agent-design", "instructions", "skills", "portable", "multi-platform"]
+      "tags": ["ai-agents", "prompt-engineering", "instruction-design", "any-platform"]
+    },
+    {
+      "name": "AngularExpert",
+      "file": "agents/angular-expert.agent.md",
+      "scope": "frontend",
+      "description": "Angular development expert — modern Angular 17+ with Signals, standalone components, and best practices",
+      "tags": ["angular", "angular17+", "signals", "standalone-components", "frontend", "typescript"]
     },
     {
       "name": "APIDesignerAgent",
       "file": "agents/api-designer.agent.md",
       "scope": "api-design",
-      "description": "Designs new APIs, creates API specifications, and refactors existing API architecture for scalability and developer experience",
+      "description": "Design REST and GraphQL APIs — endpoint structure, OpenAPI specs, versioning, auth patterns, and developer experience",
       "tags": ["rest", "graphql", "openapi", "api-design", "versioning", "any-stack"]
     },
     {
@@ -64,8 +64,15 @@
       "name": "BackendDeveloperAgent",
       "file": "agents/backend-developer.agent.md",
       "scope": "backend",
-      "description": "Builds server-side APIs, microservices, and backend systems with expertise in Node.js, Python, and Go",
+      "description": "Build server-side APIs, microservices, and backend systems — robust architecture, scalability, and production-ready implementation",
       "tags": ["nodejs", "python", "go", "api", "microservices", "backend", "polyglot"]
+    },
+    {
+      "name": "BlueprintModeAgent",
+      "file": "agents/blueprint-mode.agent.md",
+      "scope": "general",
+      "description": "Executes structured workflows (Debug, Express, Main, Loop) with strict correctness and maintainability",
+      "tags": ["workflow", "structured", "correctness", "debugging"]
     },
     {
       "name": "ChangelogAgent",
@@ -77,22 +84,36 @@
     {
       "name": "CodeAnalysisAgent",
       "file": "agents/code-analysis.agent.md",
-      "scope": "codebase-analysis",
-      "description": "Senior architect-level codebase analysis — stack detection, architecture, quality",
-      "tags": ["architecture", "analysis", "stack-detection", "onboarding", "read-only"]
+      "scope": "architecture",
+      "description": "Senior software architect-level analysis of any codebase, project, or system across any language, framework, or stack",
+      "tags": ["code-analysis", "architecture", "quality", "any-stack"]
     },
     {
-      "name": "CodeSimplifierAgent",
-      "file": "agents/code-simplifier.agent.md",
+      "name": "CodeCleanupAgent",
+      "file": "agents/code-cleanup.agent.md",
       "scope": "refactoring",
-      "description": "Simplifies and cleans code without changing functionality",
-      "tags": ["maintainability", "readability", "simplification", "any-stack"]
+      "description": "Stack-agnostic cleanup and simplification — removes dead code, reduces complexity, improves naming, eliminates duplication. Purely behavioral-preserving.",
+      "tags": ["cleanup", "simplification", "dead-code", "readability", "refactoring", "any-stack"]
+    },
+    {
+      "name": "ContainerExpertAgent",
+      "file": "agents/container-expert.agent.md",
+      "scope": "devops",
+      "description": "Multi-stage Dockerfiles, docker-compose for local development, Kubernetes manifests, and container image optimization",
+      "tags": ["docker", "kubernetes", "containers", "docker-compose", "k8s", "helm", "image-optimization", "devops"]
+    },
+    {
+      "name": "CreativeWritingAgent",
+      "file": "agents/creative-writing.agent.md",
+      "scope": "creative-writing",
+      "description": "Fiction and game writing — dialogue, voice, worldbuilding, quest text, and revision; platform-aware brevity and string-table ready output",
+      "tags": ["creative-writing", "fiction", "dialogue", "game-writing", "narrative", "worldbuilding", "character-voice", "revision"]
     },
     {
       "name": "CSharpDotNetJanitorAgent",
       "file": "agents/csharp-dotnet-janitor.agent.md",
       "scope": "refactoring",
-      "description": "C#/.NET cleanup and modernization — removes dead code and applies modern C# syntax (nullable types, pattern matching, primary constructors)",
+      "description": "C#/.NET cleanup AND modernization — applies latest C# syntax, nullable types, pattern matching, primary constructors, resolves warnings, improves test coverage",
       "tags": ["csharp", "dotnet", "cleanup", "modernization", "nullable-types", "refactoring"]
     },
     {
@@ -110,6 +131,20 @@
       "tags": ["csharp", "mcp", "dotnet", "aspnetcore", "tools", "prompts", "resources"]
     },
     {
+      "name": "DataMigrationSpecialistAgent",
+      "file": "agents/data-migration.agent.md",
+      "scope": "data",
+      "description": "ETL patterns, expand/contract schema migrations, dual-write strategies, rollback design, and data validation for safe schema and data changes",
+      "tags": ["migration", "etl", "schema-migration", "dual-write", "expand-contract", "data-quality", "rollback", "any-stack"]
+    },
+    {
+      "name": "DatabaseDesignerAgent",
+      "file": "agents/database-designer.agent.md",
+      "scope": "data",
+      "description": "Schema design, indexing strategy, migration planning, and query optimization across SQL and NoSQL databases",
+      "tags": ["database", "schema-design", "sql", "nosql", "migrations", "indexing", "postgresql", "sqlserver", "mongodb", "any-stack"]
+    },
+    {
       "name": "DependencyAuditAgent",
       "file": "agents/dependency-audit.agent.md",
       "scope": "security-audit",
@@ -120,7 +155,7 @@
       "name": "DevOpsExpertAgent",
       "file": "agents/devops-expert.agent.md",
       "scope": "devops",
-      "description": "DevOps specialist following the infinity loop principle with focus on automation, CI/CD, collaboration, and continuous improvement",
+      "description": "DevOps specialist for CI/CD pipelines, infrastructure as code, deployment strategies, and operational excellence",
       "tags": ["ci-cd", "automation", "devops", "deployment", "monitoring", "infrastructure"]
     },
     {
@@ -128,7 +163,7 @@
       "file": "agents/documentation.agent.md",
       "scope": "documentation",
       "description": "Technical writer — README, API docs, ADR, runbook, changelog for any project",
-      "tags": ["technical-writing", "readme", "api-docs", "adr", "runbook", "any-stack"]
+      "tags": ["documentation", "readme", "api-docs", "onboarding", "any-stack"]
     },
     {
       "name": "DotNetUpgradeAgent",
@@ -145,39 +180,32 @@
       "tags": ["elasticsearch", "observability", "rag", "vector-search", "security", "o11y"]
     },
     {
-      "name": "AngularExpert",
-      "file": "agents/angular-expert.agent.md",
-      "scope": "frontend",
-      "description": "Angular development expert - modern Angular 17+ with Signals, standalone components, and best practices",
-      "tags": ["angular", "signals", "standalone-components", "frontend", "typescript"]
-    },
-    {
-      "name": "ReactExpert",
-      "file": "agents/react-expert.agent.md",
-      "scope": "frontend",
-      "description": "React development expert - React 18+, hooks, TypeScript, and modern React patterns",
-      "tags": ["react", "hooks", "typescript", "frontend", "jsx"]
-    },
-    {
-      "name": "VueExpert",
-      "file": "agents/vue-expert.agent.md",
-      "scope": "frontend",
-      "description": "Vue.js development expert - Vue 3.5+, Composition API, TypeScript, and Pinia",
-      "tags": ["vue", "composition-api", "typescript", "frontend", "pinia"]
-    },
-    {
       "name": "FrontendDeveloperAgent",
       "file": "agents/frontend-developer.agent.md",
       "scope": "frontend",
-      "description": "Builds complete frontend applications across React, Vue, and Angular with focus on performance, accessibility, and maintainability",
+      "description": "Build frontend applications across React, Vue, and Angular — components, state management, accessibility, and full-stack integration",
       "tags": ["react", "vue", "angular", "frontend", "typescript", "accessibility"]
     },
     {
       "name": "FullstackDeveloperAgent",
       "file": "agents/fullstack-developer.agent.md",
       "scope": "fullstack",
-      "description": "Builds complete features spanning database, API, and frontend layers together as a cohesive unit",
+      "description": "Build complete features spanning database, API, and frontend layers as a cohesive unit",
       "tags": ["fullstack", "frontend", "backend", "database", "api", "end-to-end"]
+    },
+    {
+      "name": "GameDesignAgent",
+      "file": "agents/game-design.agent.md",
+      "scope": "game-design",
+      "description": "Game systems for any platform — core loops, RPG progression, economy, retention, live-ops, ethical monetization",
+      "tags": ["game-design", "rpg", "f2p", "premium", "pc-games", "steam", "steam-deck", "mobile-games", "monetization", "retention", "live-ops", "progression", "unity-adjacent"]
+    },
+    {
+      "name": "GameDirectorAgent",
+      "file": "agents/game-director.agent.md",
+      "scope": "game-orchestration",
+      "description": "Game vision hub — core decisions, sequencing, and delegation across narrative, systems design, mobile and Steam/PC shipping, IP screening, Unity/mobile implementation",
+      "tags": ["game-design", "mobile-games", "pc-games", "steam-deck", "orchestration", "delegation", "vision", "production", "multi-agent", "rpg", "f2p"]
     },
     {
       "name": "GitHubActionsExpertAgent",
@@ -190,15 +218,22 @@
       "name": "GraphQLArchitectAgent",
       "file": "agents/graphql-architect.agent.md",
       "scope": "api-design",
-      "description": "Designs and evolves GraphQL schemas across microservices, implements federation architectures, and optimizes query performance",
+      "description": "Design and evolve GraphQL schemas — federation architecture, query optimization, and distributed graph design",
       "tags": ["graphql", "federation", "apollo", "schema-design", "api", "microservices"]
     },
     {
-      "name": "UniversalJanitorAgent",
-      "file": "agents/janitor.agent.md",
-      "scope": "refactoring",
-      "description": "Stack-agnostic cleanup — removes dead code, unused dependencies, duplicate logic, and over-engineering. Purely subtractive for any language",
-      "tags": ["cleanup", "dead-code", "tech-debt", "simplification", "any-stack"]
+      "name": "LogForensicsAgent",
+      "file": "agents/log-forensics.agent.md",
+      "scope": "debugging",
+      "description": "Analyzes exported logs to reconstruct incident timelines, isolate probable root causes, and map findings back to code and configuration",
+      "tags": ["logs", "incident-response", "root-cause-analysis", "observability", "forensics", "any-stack"]
+    },
+    {
+      "name": "LoreIpScreeningAgent",
+      "file": "agents/lore-ip-screening.agent.md",
+      "scope": "content-compliance",
+      "description": "Heuristic screening of lore and game names for trademark, copyright, and trade-dress red flags — not legal clearance",
+      "tags": ["trademark", "copyright", "ip", "lore", "game-dev", "legal-risk", "names", "clearance", "compliance"]
     },
     {
       "name": "MicroservicesArchitectAgent",
@@ -211,8 +246,64 @@
       "name": "MobileDeveloperAgent",
       "file": "agents/mobile-developer.agent.md",
       "scope": "mobile",
-      "description": "Builds cross-platform mobile applications with native performance using React Native and Flutter, targeting iOS and Android",
+      "description": "Build cross-platform mobile apps — React Native and Flutter with native performance, offline-first architecture",
       "tags": ["react-native", "flutter", "mobile", "cross-platform", "ios", "android"]
+    },
+    {
+      "name": "MobileGameShippingAgent",
+      "file": "agents/mobile-game-shipping.agent.md",
+      "scope": "mobile-distribution",
+      "description": "App Store and Google Play release — ASO, submissions, privacy and age ratings, IAP compliance, beta tracks, store copy and asset briefs",
+      "tags": ["mobile-games", "app-store", "google-play", "aso", "compliance", "privacy", "iap", "submissions", "testflight", "play-console"]
+    },
+    {
+      "name": "MobileGamesMarketIntelligenceAgent",
+      "file": "agents/mobile-games-market-intelligence.agent.md",
+      "scope": "mobile-market-intelligence",
+      "description": "Mobile games market and store intelligence — iOS/Android competition, genre trends, chart/feature meta, retention and monetization patterns",
+      "tags": ["mobile-games", "app-store", "google-play", "market-research", "competition", "aso", "f2p", "retention", "monetization", "genre-trends", "game-dev"]
+    },
+    {
+      "name": "NarrativeDesignerAgent",
+      "file": "agents/narrative-designer.agent.md",
+      "scope": "game-development",
+      "description": "Story systems and dialogue architect — branching dialogue, lore architecture, environmental storytelling, character voice, narrative-gameplay integration",
+      "tags": ["narrative", "dialogue", "lore", "branching-story", "game-writing", "environmental-storytelling"]
+    },
+    {
+      "name": "NarrativeEngagementAgent",
+      "file": "agents/narrative-engagement.agent.md",
+      "scope": "creative-writing",
+      "description": "Critiques and improves game narrative for retention — hooks, pacing, character arcs, lore consistency, skip-friendly delivery",
+      "tags": ["narrative", "game-design", "retention", "pacing", "mobile-games", "pc-games", "steam-deck", "rpg", "lore", "critique", "live-ops"]
+    },
+    {
+      "name": "ObservabilityEngineerAgent",
+      "file": "agents/observability-engineer.agent.md",
+      "scope": "observability",
+      "description": "Instruments applications with structured/scoped logging, distributed tracing, and metrics — ensuring correlation IDs flow across all service boundaries",
+      "tags": ["observability", "telemetry", "logging", "tracing", "metrics", "opentelemetry", "structured-logging", "correlation", "distributed-systems", "any-stack"]
+    },
+    {
+      "name": "OpenAPIClientBuilderAgent",
+      "file": "agents/openapi-client-builder.agent.md",
+      "scope": "api-design",
+      "description": "Reads OpenAPI/Swagger/AsyncAPI specs and designs typed API clients with appropriate abstraction, auth handling, retry policies, and error strategies",
+      "tags": ["openapi", "swagger", "asyncapi", "api-client", "codegen", "nswag", "kiota", "http-client", "typescript", "csharp", "any-stack"]
+    },
+    {
+      "name": "OrchestratorAgent",
+      "file": "agents/orchestrator.agent.md",
+      "scope": "orchestration",
+      "description": "Token-efficient task orchestrator — decomposes requests, routes each subtask to the right specialist agent, parallelizes where possible, and returns aggregated results. Never does specialist work itself.",
+      "tags": ["orchestration", "delegation", "routing", "multi-agent", "efficiency", "any-stack"]
+    },
+    {
+      "name": "PerformanceProfilerAgent",
+      "file": "agents/performance-profiler.agent.md",
+      "scope": "performance",
+      "description": "Profiling, benchmarking, hot-path identification, memory analysis, and load testing across .NET, Node.js, and browser environments",
+      "tags": ["profiling", "benchmarking", "performance", "memory", "dotnet-trace", "benchmarkdotnet", "k6", "load-testing", "any-stack"]
     },
     {
       "name": "PlanModeAgent",
@@ -229,25 +320,53 @@
       "tags": ["pull-request", "documentation", "git", "github", "code-review"]
     },
     {
+      "name": "ProductDiscoveryAgent",
+      "file": "agents/product-discovery.agent.md",
+      "scope": "product-strategy",
+      "description": "Takes a rough domain idea and produces a complete buildable product definition — domain research, competitor gap analysis, niche selection, feature set, requirements spec",
+      "tags": ["product", "discovery", "requirements", "feature-definition", "domain-research", "competitor-analysis", "spec", "indie-dev"]
+    },
+    {
+      "name": "ProductStrategistAgent",
+      "file": "agents/product-strategist.agent.md",
+      "scope": "product-strategy",
+      "description": "Generates and ruthlessly validates profitable app/SaaS ideas for indie developers — filters for realistic build time, real monetization, fastest route to first revenue",
+      "tags": ["product", "saas", "ios", "indie-dev", "monetization", "mvp", "validation", "market-research"]
+    },
+    {
+      "name": "ReactExpert",
+      "file": "agents/react-expert.agent.md",
+      "scope": "frontend",
+      "description": "React development expert — React 18+, hooks, TypeScript, and modern React patterns",
+      "tags": ["react", "react18+", "hooks", "typescript", "frontend", "jsx"]
+    },
+    {
+      "name": "RequirementsEngineerAgent",
+      "file": "agents/requirements-engineer.agent.md",
+      "scope": "product-strategy",
+      "description": "Turns feature ideas into structured requirements, acceptance criteria and delivery notes",
+      "tags": ["requirements", "acceptance-criteria", "spec", "product", "feature-definition", "delivery", "any-stack"]
+    },
+    {
       "name": "SecurityCheckAgent",
       "file": "agents/security-check.agent.md",
-      "scope": "security-audit",
+      "scope": "security",
       "description": "OWASP Top 10 security audit adapted to any stack and domain",
-      "tags": ["security", "owasp", "review", "any-stack"]
+      "tags": ["security", "owasp", "audit", "vulnerabilities", "any-stack"]
+    },
+    {
+      "name": "SteamPcDeckAgent",
+      "file": "agents/steam-pc-deck.agent.md",
+      "scope": "pc-game-distribution",
+      "description": "Steam and PC shipping — Steamworks basics, Windows/Linux depots, Steam Deck UX and compatibility, Steam Input, store page honesty",
+      "tags": ["steam", "steam-deck", "steamworks", "pc-games", "linux", "steamos", "distribution", "game-dev"]
     },
     {
       "name": "TechDebtAnalysisAgent",
       "file": "agents/tech-debt-analysis.agent.md",
-      "scope": "tech-debt-analysis",
+      "scope": "architecture",
       "description": "Evidence-based tech debt analysis and remediation proposal writing",
-      "tags": ["analysis", "architecture", "documentation", "local-first"]
-    },
-    {
-      "name": "TechnicalWriterAgent",
-      "file": "agents/technical-writer.agent.md",
-      "scope": "documentation",
-      "description": "Technical writing specialist for documentation, guides, API references, and developer-facing content",
-      "tags": ["technical-writing", "documentation", "readme", "guides", "any-stack"]
+      "tags": ["tech-debt", "architecture", "analysis", "refactoring", "any-stack"]
     },
     {
       "name": "TestGeneratorAgent",
@@ -255,13 +374,6 @@
       "scope": "testing",
       "description": "Generates comprehensive, idiomatic test suites by reading existing project tests first and matching conventions exactly",
       "tags": ["testing", "unit-tests", "tdd", "conventions", "any-stack"]
-    },
-    {
-      "name": "UITestingExpert",
-      "file": "agents/ui-automation-tester.agent.md",
-      "scope": "testing",
-      "description": "Expert in UI automation testing (Playwright, Cypress, Selenium, Puppeteer) and frontend unit testing (Jest, Vitest, Mocha) — stack-agnostic proficiency across all browser-testing and unit-testing frameworks",
-      "tags": ["testing", "playwright", "cypress", "selenium", "puppeteer", "e2e", "browser-testing", "jest", "vitest", "mocha", "unit-tests", "visual-regression", "accessibility-testing", "any-stack"]
     },
     {
       "name": "TestWriterAgent",
@@ -278,95 +390,39 @@
       "tags": ["cli", "build-tools", "code-generators", "ide-extensions", "dx", "tooling"]
     },
     {
-      "name": "LogForensicsAgent",
-      "file": "agents/log-forensics.agent.md",
-      "scope": "debugging",
-      "description": "Analyzes exported logs to reconstruct incident timelines, isolate probable root causes, and map findings back to code and configuration",
-      "tags": ["logs", "incident-response", "root-cause-analysis", "observability", "forensics", "any-stack"]
-    },
-    {
       "name": "TroubleshootingAgent",
       "file": "agents/troubleshooting.agent.md",
       "scope": "debugging",
       "description": "Root cause analysis from any issue, error, or stack trace across any stack",
-      "tags": ["root-cause-analysis", "debugging", "stack-trace", "any-stack"]
+      "tags": ["troubleshooting", "debugging", "root-cause", "stack-trace", "any-stack"]
     },
     {
-      "name": "DatabaseDesignerAgent",
-      "file": "agents/database-designer.agent.md",
-      "scope": "data",
-      "description": "Schema design, indexing strategy, migration planning, and query optimization across SQL and NoSQL databases",
-      "tags": ["database", "schema-design", "sql", "nosql", "migrations", "indexing", "postgresql", "sqlserver", "mongodb", "any-stack"]
+      "name": "UIDesignerAgent",
+      "file": "agents/ui-designer.agent.md",
+      "scope": "frontend",
+      "description": "Design visual interfaces, create design systems, build component libraries — visual design, interaction patterns, and accessibility",
+      "tags": ["design", "ui", "ux", "design-system", "accessibility", "components"]
     },
     {
-      "name": "ContainerExpertAgent",
-      "file": "agents/container-expert.agent.md",
-      "scope": "devops",
-      "description": "Multi-stage Dockerfiles, docker-compose for local development, Kubernetes manifests, and container image optimization",
-      "tags": ["docker", "kubernetes", "containers", "docker-compose", "k8s", "helm", "image-optimization", "devops"]
+      "name": "UITestingExpert",
+      "file": "agents/ui-automation-tester.agent.md",
+      "scope": "testing",
+      "description": "UI automation testing specialist — Playwright, Cypress, Selenium, Puppeteer, and frontend unit testing frameworks",
+      "tags": ["ui-testing", "playwright", "cypress", "selenium", "vitest", "jest", "any-stack"]
     },
     {
-      "name": "OpenAPIClientBuilderAgent",
-      "file": "agents/openapi-client-builder.agent.md",
-      "scope": "api-design",
-      "description": "Reads OpenAPI/Swagger/AsyncAPI specs and designs typed API clients with appropriate abstraction, auth handling, retry policies, and error strategies",
-      "tags": ["openapi", "swagger", "asyncapi", "api-client", "codegen", "nswag", "kiota", "http-client", "typescript", "csharp", "any-stack"]
+      "name": "UnityArchitectAgent",
+      "file": "agents/unity-architect.agent.md",
+      "scope": "unity",
+      "description": "Data-driven modularity specialist — ScriptableObjects, decoupled systems, and single-responsibility component design for scalable Unity projects",
+      "tags": ["unity", "architecture", "scriptable-objects", "ecs", "design-patterns", "gamedev"]
     },
     {
-      "name": "PerformanceProfilerAgent",
-      "file": "agents/performance-profiler.agent.md",
-      "scope": "performance",
-      "description": "Profiling, benchmarking, hot-path identification, memory analysis, and load testing across .NET, Node.js, and browser environments",
-      "tags": ["profiling", "benchmarking", "performance", "memory", "dotnet-trace", "benchmarkdotnet", "k6", "load-testing", "any-stack"]
-    },
-    {
-      "name": "DataMigrationSpecialistAgent",
-      "file": "agents/data-migration.agent.md",
-      "scope": "data",
-      "description": "ETL patterns, expand/contract schema migrations, dual-write strategies, rollback design, and data validation for safe schema and data changes",
-      "tags": ["migration", "etl", "schema-migration", "dual-write", "expand-contract", "data-quality", "rollback", "any-stack"]
-    },
-    {
-      "name": "ObservabilityEngineerAgent",
-      "file": "agents/observability-engineer.agent.md",
-      "scope": "observability",
-      "description": "Instruments applications with structured/scoped logging, distributed tracing, and metrics — ensuring correlation IDs flow across all service boundaries in distributed systems",
-      "tags": ["observability", "telemetry", "logging", "tracing", "metrics", "opentelemetry", "structured-logging", "correlation", "distributed-systems", "dotnet", "any-stack"]
-    },
-    {
-      "name": "ProductDiscoveryAgent",
-      "file": "agents/product-discovery.agent.md",
-      "scope": "product-strategy",
-      "description": "Takes a rough domain idea and acts as a domain expert — researches the space, maps competitor gaps, identifies the underserved niche, and produces a complete feature set and requirements spec ready to build",
-      "tags": ["product", "discovery", "requirements", "feature-definition", "domain-research", "competitor-analysis", "user-stories", "spec", "indie-dev", "saas", "ios"]
-    },
-    {
-      "name": "ProductStrategistAgent",
-      "file": "agents/product-strategist.agent.md",
-      "scope": "product-strategy",
-      "description": "Generates and ruthlessly validates profitable app/SaaS ideas for indie developers — filters for realistic build time, real monetization paths, and fastest route to first revenue",
-      "tags": ["product", "saas", "ios", "indie-dev", "monetization", "mvp", "validation", "market-research", "idea-generation", "burnout-prevention"]
-    },
-    {
-      "name": "CreativeWritingAgent",
-      "file": "agents/creative-writing.agent.md",
-      "scope": "creative-writing",
-      "description": "Fiction and game writing — dialogue, voice, worldbuilding, quest text, and revision; platform-aware brevity (mobile, PC, Deck) and string-table ready output",
-      "tags": ["creative-writing", "fiction", "dialogue", "game-writing", "narrative", "worldbuilding", "character-voice", "revision"]
-    },
-    {
-      "name": "NarrativeEngagementAgent",
-      "file": "agents/narrative-engagement.agent.md",
-      "scope": "creative-writing",
-      "description": "Critiques and improves game narrative for retention — hooks, pacing, character arcs, lore consistency, skip-friendly delivery (mobile, PC, Deck), evergreen live-ops threads",
-      "tags": ["narrative", "game-design", "retention", "pacing", "mobile-games", "pc-games", "steam-deck", "rpg", "lore", "critique", "live-ops"]
-    },
-    {
-      "name": "GameDesignAgent",
-      "file": "agents/game-design.agent.md",
-      "scope": "game-design",
-      "description": "Game systems for any platform — core loops, RPG progression, economy, retention, live-ops, ethical monetization; mobile F2P, premium PC/Steam, Steam Deck sessions",
-      "tags": ["game-design", "rpg", "f2p", "premium", "pc-games", "steam", "steam-deck", "mobile-games", "monetization", "retention", "live-ops", "progression", "unity-adjacent"]
+      "name": "UnityEditorToolDeveloperAgent",
+      "file": "agents/unity-editor-tool-developer.agent.md",
+      "scope": "unity",
+      "description": "Unity editor automation specialist — custom EditorWindows, PropertyDrawers, AssetPostprocessors, ScriptedImporters, and pipeline automation",
+      "tags": ["unity", "editor-tools", "automation", "asset-pipeline", "inspector", "gamedev"]
     },
     {
       "name": "UnityExpertAgent",
@@ -376,39 +432,25 @@
       "tags": ["unity", "csharp", "game-dev", "steam", "steam-deck", "linux", "windows", "urp", "hdrp", "addressables", "input-system"]
     },
     {
-      "name": "SteamPcDeckAgent",
-      "file": "agents/steam-pc-deck.agent.md",
-      "scope": "pc-game-distribution",
-      "description": "Steam and PC shipping — Steamworks basics, Windows/Linux depots, Steam Deck UX and compatibility, Steam Input, store page honesty; pairs with unity-expert and game-design",
-      "tags": ["steam", "steam-deck", "steamworks", "pc-games", "linux", "steamos", "distribution", "game-dev"]
+      "name": "UnityMultiplayerEngineerAgent",
+      "file": "agents/unity-multiplayer-engineer.agent.md",
+      "scope": "unity",
+      "description": "Networked gameplay specialist — Netcode for GameObjects, Unity Gaming Services (Relay/Lobby), client-server authority, lag compensation, and state synchronization",
+      "tags": ["unity", "multiplayer", "netcode", "networking", "relay", "lobby", "ngo", "gamedev"]
     },
     {
-      "name": "MobileGameShippingAgent",
-      "file": "agents/mobile-game-shipping.agent.md",
-      "scope": "mobile-distribution",
-      "description": "App Store and Google Play release — ASO, submissions, privacy and age ratings, IAP compliance, beta tracks, store copy and asset briefs",
-      "tags": ["mobile-games", "app-store", "google-play", "aso", "compliance", "privacy", "iap", "submissions", "testflight", "play-console"]
+      "name": "UnityShaderGraphArtistAgent",
+      "file": "agents/unity-shader-graph-artist.agent.md",
+      "scope": "unity",
+      "description": "Visual effects and material specialist — Unity Shader Graph, HLSL, URP/HDRP rendering pipelines, and custom pass authoring",
+      "tags": ["unity", "shaders", "shader-graph", "hlsl", "urp", "hdrp", "rendering", "vfx", "gamedev"]
     },
     {
-      "name": "MobileGamesMarketIntelligenceAgent",
-      "file": "agents/mobile-games-market-intelligence.agent.md",
-      "scope": "mobile-market-intelligence",
-      "description": "Mobile games market and store intelligence — iOS/Android competition, genre trends, chart/feature meta, retention and monetization patterns; emphasizes fresh research, not paid analytics DBs",
-      "tags": ["mobile-games", "app-store", "google-play", "market-research", "competition", "aso", "f2p", "retention", "monetization", "genre-trends", "game-dev"]
-    },
-    {
-      "name": "LoreIpScreeningAgent",
-      "file": "agents/lore-ip-screening.agent.md",
-      "scope": "content-compliance",
-      "description": "Heuristic screening of lore and game names for trademark, copyright, and trade-dress red flags — not legal clearance; suggests safer alternatives and counsel handoff",
-      "tags": ["trademark", "copyright", "ip", "lore", "game-dev", "legal-risk", "names", "clearance", "compliance"]
-    },
-    {
-      "name": "ACTestPlannerAgent",
-      "file": "agents/ac-test-planner.agent.md",
-      "scope": "testing",
-      "description": "Derives a structured test plan and writes unit test stubs from feature Acceptance Criteria — AC-first, language-agnostic planning before any code exists",
-      "tags": ["testing", "acceptance-criteria", "tdd", "bdd", "test-planning", "unit-tests", "stubs", "requirements", "any-stack"]
+      "name": "VueExpert",
+      "file": "agents/vue-expert.agent.md",
+      "scope": "frontend",
+      "description": "Vue.js development expert — Vue 3.5+, Composition API, TypeScript, and Pinia",
+      "tags": ["vue", "vue3", "composition-api", "typescript", "frontend", "volar"]
     }
   ]
 }

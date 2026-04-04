@@ -59,24 +59,31 @@ Working bridge example:
 }
 ```
 
-## When to Use Memory
+## Proactive Memory Workflow
 
-Use memory only for durable cross-session context:
+Memory usage should be **automatic and contextual** — not dependent on the user asking for it. But it must also be **token-conscious** — every recall burns input tokens, every persist burns output tokens.
 
-- architecture decisions and rationale
-- team conventions and recurring patterns
-- project-specific facts that should persist
+**Who owns memory?** The host tool (Claude Code, Cursor, Gemini, OpenCode) and the orchestrator agent handle recall/persist. Individual specialist agents do **not** call memory tools directly — they receive relevant context via their delegation briefs and report outcomes back to the orchestrator.
 
-Do not persist:
+### When to Recall (do this without being asked)
 
-- secrets, credentials, tokens
-- ephemeral debugging notes
-- session-only chatter
+- **Starting a non-trivial task in a known domain**: One focused query, `maxResults=3`. Example: `memory_recall(query="auth-service")` before touching auth code.
+- **Encountering a design decision**: Check if a prior decision exists before proposing a new approach.
+- **Debugging a recurring issue**: Check if it's been seen before.
+- **Skip recall** for trivial tasks (typo fixes, single imports, formatting) and for tasks with no plausible prior context.
+
+### When to Persist (do this without being asked)
+
+- **Architecture or design decisions** with rationale
+- **Non-obvious conventions** discovered or established
+- **Tricky bug root causes** that could recur
+- **New reusable patterns** introduced
+- **Skip persist** for trivial changes, routine work, or anything already in memory.
 
 ## Token-Efficient Defaults
 
-1. Do not auto-recall at session start.
-2. Recall only when task needs prior context.
-3. Use specific queries with small `maxResults`.
-4. Persist only high-value outcomes after meaningful decisions.
-5. If memory is unavailable, continue normally without blocking.
+1. Recall only when task context would benefit — not reflexively at session start.
+2. Use specific queries with small `maxResults` (3-5, not 10).
+3. Persist only high-value outcomes — decisions, conventions, patterns, resolutions.
+4. If memory is unavailable, continue normally without blocking.
+5. Prefer `memory_recall(query, maxResults=3)` over `memory_read()` — the latter dumps the entire graph.

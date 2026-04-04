@@ -1,3 +1,6 @@
-# Global AGENTS.md (Antigravity / cross-tool)
+# Global AGENTS.md (Gemini CLI)
 
-!include "D:/Projects/agent-configurations/global-config/_shared/memory-bridge-instructions.md"
+<!-- Gemini CLI reads both GEMINI.md and AGENTS.md. To avoid loading identical content twice,
+     all shared instructions are in GEMINI.md. This file is intentionally minimal. -->
+
+See GEMINI.md for global instructions.

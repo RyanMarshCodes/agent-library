@@ -1,263 +1,83 @@
 # C# Async Programming
 
-Based on Microsoft [async/await best practices](https://learn.microsoft.com/en-us/dotnet/csharp/async) and [ConfigureAwait FAQ](https://devblogs.microsoft.com/pfxteam/configureawait-faq/).
-
----
-
-## Core Principles
-
-### Use for I/O-Bound Operations
-- Database calls
-- Web API requests
-- File operations
-- Network requests
-
-### Do Not Use for CPU-Bound Work
-- Use `Task.Run()` for CPU-intensive work on background threads
-
----
-
-## Async All the Way
-
-Propagate async through the entire call stack:
-```csharp
-// Good - async all the way
-public async Task<Order> GetOrderAsync(int id)
-{
-    return await _repository.GetOrderAsync(id);
-}
-
-// Bad - blocking the thread
-public Order GetOrder(int id)
-{
-    return _repository.GetOrderAsync(id).GetAwaiter().GetResult();
-}
-```
-
----
-
-## Return Types
-
-### Task and Task<T>
-Standard return types for async methods:
-```csharp
-public async Task<Order> GetOrderAsync(int id)
-{
-    var order = await _repository.FindAsync(id);
-    return order;
-}
-
-public async Task SaveOrderAsync(Order order)
-{
-    await _repository.SaveAsync(order);
-}
-```
-
-### ValueTask<T>
-Use only for hot paths with frequent synchronous completions:
-```csharp
-// Only when the method often completes synchronously
-public ValueTask<Order> GetOrderAsync(int id)
-{
-    if (_cache.TryGet(id, out var order))
-        return ValueTask.FromResult(order);
-    
-    return new ValueTask<Order>(_repository.GetOrderAsync(id));
-}
-```
-
-### IAsyncEnumerable<T>
-For async streams:
-```csharp
-public async IAsyncEnumerable<Product> GetProductsAsync([EnumeratorCancellation] CancellationToken ct = default)
-{
-    foreach (var product in _products)
-    {
-        await Task.Delay(100, ct);
-        yield return product;
-    }
-}
-```
-
----
-
-## Avoid Async Void
-
-### Never Use Except for Event Handlers
-```csharp
-// Bad
-public async void ProcessData() { }  // Exceptions cannot be caught!
-
-// Good - for event handlers only
-private async void Button_Click(object sender, EventArgs e)
-{
-    await ProcessAsync();
-}
-```
-
-### Use async Task Instead
-```csharp
-public async Task ProcessDataAsync()
-{
-    await Task.Delay(100);
-}
-```
-
----
+Standard async/await mechanics (Task, async void is bad, use await not .Result) are assumed knowledge. This covers non-obvious patterns and project conventions.
 
 ## ConfigureAwait
 
-### Library Code
-Use `ConfigureAwait(false)` to avoid capturing synchronization context:
 ```csharp
+// Library code: always ConfigureAwait(false)
 public async Task<Order> GetOrderAsync(int id)
 {
-    var order = await _repository.FindAsync(id).ConfigureAwait(false);
-    return order;
+    return await _repository.FindAsync(id).ConfigureAwait(false);
 }
+
+// Application code (ASP.NET Core): omit — no SynchronizationContext to capture
 ```
 
-### Application Code
-- **ASP.NET Core**: No synchronization context - generally not needed
-- **UI Applications**: Use when you don't need the UI context
-
-### Rule of Thumb
-Use `ConfigureAwait(false)` in library code; omit in application code unless specific context is needed.
-
----
+Rule: `ConfigureAwait(false)` in reusable libraries. Omit in ASP.NET Core application code.
 
 ## Cancellation
 
-### Accept CancellationToken
 ```csharp
 public async Task<Order> GetOrderAsync(int id, CancellationToken ct = default)
 {
-    // Check at appropriate points
     ct.ThrowIfCancellationRequested();
-    
-    var order = await _repository.FindAsync(id, ct);
-    return order;
+    return await _repository.FindAsync(id, ct);
 }
 ```
 
-### Use Linked Tokens for Timeouts
+### Linked Tokens for Timeouts
+
 ```csharp
-using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-try
+using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+cts.CancelAfter(TimeSpan.FromSeconds(30));
+await ProcessAsync(cts.Token);
+```
+
+Always accept `CancellationToken` as the last parameter with `default` value. Pass it through to every async call.
+
+## ValueTask for Hot Paths
+
+```csharp
+public ValueTask<Order?> GetOrderAsync(int id)
 {
-    await ProcessAsync(cts.Token);
+    if (_cache.TryGet(id, out var order))
+        return ValueTask.FromResult<Order?>(order);
+
+    return new ValueTask<Order?>(LoadFromDbAsync(id));
 }
-catch (OperationCanceledException) when (cts.IsCancellationRequested)
+```
+
+Use `ValueTask<T>` only when the method frequently completes synchronously (cache hits, short-circuits). Default to `Task<T>` everywhere else.
+
+## IAsyncEnumerable for Streaming
+
+```csharp
+public async IAsyncEnumerable<Product> GetProductsAsync(
+    [EnumeratorCancellation] CancellationToken ct = default)
 {
-    // Handle timeout
+    await foreach (var product in _context.Products.AsAsyncEnumerable().WithCancellation(ct))
+        yield return product;
 }
 ```
 
----
+## Parallel Async
 
-## Exception Handling
-
-### Always Await Within Try-Catch
 ```csharp
-public async Task ProcessAsync()
-{
-    try
-    {
-        var result = await _service.GetDataAsync();
-        // Process result
-    }
-    catch (HttpRequestException ex)
-    {
-        // Handle specific exceptions
-        _logger.LogError(ex, "HTTP error occurred");
-        throw;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Unexpected error");
-        throw;
-    }
-}
+// Independent I/O tasks — fire all, await together
+var (orders, customers) = (GetOrdersAsync(ct), GetCustomersAsync(ct));
+await Task.WhenAll(orders, customers);
+
+// Bounded parallelism for large collections
+await Parallel.ForEachAsync(items,
+    new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = ct },
+    async (item, token) => await ProcessAsync(item, token));
 ```
 
-### Avoid Fire-and-Forget
-```csharp
-// Bad - exceptions are lost
-_ = Task.Run(() => DoWork());
+## Key Rules
 
-// Good - handle appropriately
-_ = Task.Run(() => DoWork()).ContinueWith(t => 
-    _logger.LogError(t.Exception, "Background work failed"), 
-    TaskContinuationOptions.OnlyOnFaulted);
-```
-
----
-
-## Task.WhenAll vs Parallel.ForEachAsync
-
-### WhenAll for Multiple Independent Tasks
-```csharp
-var tasks = orders.Select(o => ProcessOrderAsync(o));
-await Task.WhenAll(tasks);
-```
-
-### Parallel.ForEachAsync for CPU-Bound Work
-```csharp
-await Parallel.ForEachAsync(items, new ParallelOptions { MaxDegreeOfParallelism = 4 },
-    async (item, ct) =>
-    {
-        await ProcessItemAsync(item);
-    });
-```
-
----
-
-## Common Pitfalls
-
-### Blocking on Async Code
-```csharp
-// Bad - causes deadlock potential
-var result = task.Result;
-
-// Good
-var result = await task;
-```
-
-### Not Awaiting Task
-```csharp
-// Bad - fire and forget in non-trivial scenarios
-GetDataAsync();
-
-// Good
-await GetDataAsync();
-```
-
-### Async Without Await
-```csharp
-// Bad - compiler warning, does not run asynchronously
-public async Task DoSomethingAsync()
-{
-    // No await - runs synchronously!
-    var data = LoadData();
-}
-```
-
----
-
-## Performance Tips
-
-### Avoid Unnecessary Allocations
-- Use `ValueTask<T>` for hot paths
-- Reuse `HttpClient` instances
-- Use `ArrayPool<T>` for large buffers
-
-### Avoid Chatty Awaits
-```csharp
-// Chatty - many context switches
-var a = await GetAAsync();
-var b = await GetBAsync();
-var c = await GetCAsync();
-
-// Better - single await when possible
-var (a, b, c) = await GetAllAsync();
-```
+- **Async all the way** — never `.Result`, `.Wait()`, `.GetAwaiter().GetResult()` (deadlock risk)
+- **Never fire-and-forget** — `_ = Task.Run(...)` loses exceptions; use a background service or `IHostedService`
+- **Suffix with `Async`** — `GetOrderAsync`, not `GetOrder` for async methods
+- **Don't `await` then immediately `return`** — just `return _repo.GetAsync(id)` (skip the state machine)
+- **Catch cancellation separately** — `catch (Exception ex) when (ex is not OperationCanceledException)`

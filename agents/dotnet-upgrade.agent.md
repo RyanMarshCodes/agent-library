@@ -1,7 +1,6 @@
 ---
 description: 'C#/.NET version migration specialist: TargetFramework bumps, NuGet package compatibility, breaking change remediation, and CI/CD pipeline updates. Use when the goal is upgrading from one .NET version to another (e.g. net6.0 → net8.0). Does not perform general code cleanup or modernization — use csharp-dotnet-janitor for that.'
 name: '.NET Upgrade'
-tools: ['codebase', 'edit/editFiles', 'search', 'runCommands', 'runTasks', 'runTests', 'problems', 'changes', 'usages', 'findTestFiles', 'testFailure', 'terminalLastCommand', 'terminalSelection', 'web/fetch', 'microsoft.docs.mcp']
 model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "migration"
 tags: ["dotnet", "csharp", "migration", "upgrade", "framework", "nuget"]

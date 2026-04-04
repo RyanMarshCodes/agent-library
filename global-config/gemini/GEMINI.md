@@ -1,4 +1,138 @@
-# Global instructions (Google Antigravity)
+# Global Instructions (Gemini CLI / Antigravity)
 
-!include "D:/Projects/agent-configurations/global-config/_shared/memory-bridge-instructions.md"
-!include "D:/Projects/agent-configurations/global-config/_shared/context-management.md"
+# Ryan.MCP Knowledge-Graph Memory
+
+Canonical memory usage for all AI tools in this setup.
+
+Current backend: Ryan.MCP native Postgres memory store (persistent docker volume via AppHost).
+
+## Primary Tool Path (Preferred)
+
+Use Ryan.MCP top-level tools first:
+
+- `memory_status` to check availability
+- `memory_recall(query, maxResults=5)` for targeted recall
+- `memory_persist(entityName, entityType, observations)` to save durable learnings
+- `memory_link(fromEntity, toEntity, relationType)` to connect entities
+- `memory_read()` only for full-graph review (expensive)
+
+## Recall Query Best Practices
+
+`memory_recall` is intentionally lightweight and works best with focused query terms.
+
+- Prefer short targeted queries over long natural-language sentences.
+- Use exact entity names/slugs when possible (for example `test-entity-final`).
+- If a long query returns empty, retry with:
+  - key phrase only
+  - hyphenated/sluggified form
+  - core noun terms (2-5 words)
+
+Examples:
+
+- Good: `memory_recall(query="test-entity-final")`
+- Good: `memory_recall(query="auth-service decision")`
+- Weak: `memory_recall(query="please find the thing we discussed about auth migration last week")`
+
+## Fallback Tool Path (Low-Level Debug)
+
+If top-level memory tools are unavailable or need debugging, use the connector bridge:
+
+1. `list_external_mcp_tools` with `connector: "memory"`
+2. `call_external_mcp_tool` with:
+   - `connector: "memory"`
+   - `tool`: `search_nodes`, `read_graph`, `create_entities`, `add_observations`, `create_relations`, etc.
+   - `argumentsJson`: JSON object string matching downstream schema
+
+Note: the legacy external `memory` connector may be disabled when native Postgres memory is active.
+
+Important for bridge calls:
+
+- `argumentsJson` must be a JSON object **string** (not null/undefined).
+- For `search_nodes`, pass at least `{"query":"..."}`.
+- If you pass null or omit required args, downstream tools often error with "expects object".
+
+Working bridge example:
+
+```json
+{
+  "connector": "memory",
+  "tool": "search_nodes",
+  "argumentsJson": "{\"query\":\"test-entity-final\"}"
+}
+```
+
+## Proactive Memory Workflow
+
+Memory usage should be **automatic and contextual** — not dependent on the user asking for it. But it must also be **token-conscious** — every recall burns input tokens, every persist burns output tokens.
+
+**Who owns memory?** The host tool (Claude Code, Cursor, Gemini, OpenCode) and the orchestrator agent handle recall/persist. Individual specialist agents do **not** call memory tools directly — they receive relevant context via their delegation briefs and report outcomes back to the orchestrator.
+
+### When to Recall (do this without being asked)
+
+- **Starting a non-trivial task in a known domain**: One focused query, `maxResults=3`. Example: `memory_recall(query="auth-service")` before touching auth code.
+- **Encountering a design decision**: Check if a prior decision exists before proposing a new approach.
+- **Debugging a recurring issue**: Check if it's been seen before.
+- **Skip recall** for trivial tasks (typo fixes, single imports, formatting) and for tasks with no plausible prior context.
+
+### When to Persist (do this without being asked)
+
+- **Architecture or design decisions** with rationale
+- **Non-obvious conventions** discovered or established
+- **Tricky bug root causes** that could recur
+- **New reusable patterns** introduced
+- **Skip persist** for trivial changes, routine work, or anything already in memory.
+
+## Token-Efficient Defaults
+
+1. Recall only when task context would benefit — not reflexively at session start.
+2. Use specific queries with small `maxResults` (3-5, not 10).
+3. Persist only high-value outcomes — decisions, conventions, patterns, resolutions.
+4. If memory is unavailable, continue normally without blocking.
+5. Prefer `memory_recall(query, maxResults=3)` over `memory_read()` — the latter dumps the entire graph.
+
+---
+
+# Context Window Management
+
+Context is the single biggest constraint shaping how coding agents think, reason, and respond. Every token competes for attention.
+
+## The Hard Limit
+
+Each LLM has a hard-coded context window limit. When exceeded, you get "context window exceeded" errors or the model stops mid-output.
+
+**Golden rule:** Stay under 70–80% of your total limit.
+
+## The Lost-in-the-Middle Problem
+
+As context grows, performance degrades. Models over-prioritize information from the start and end (primacy/recency bias), while details in the middle fade away.
+
+A lean, focused session often outperforms a massive context.
+
+## Context Hygiene Rules
+
+1. **Keep prompts short and specific** — prefer linked references or summaries over full file pastes
+2. **Avoid unnecessary MCP servers** — each adds system prompts, tool definitions, and metadata that bloat your context
+3. **Prefer linked references** over pasting entire files when possible
+4. **Use tools to check context** — if available, run `context` to see usage breakdown
+5. **Clear or compact proactively** — don't wait until the model becomes forgetful
+6. **Reset between tasks** — start fresh when shifting focus or after completing significant milestones
+
+## When to Reset
+
+- Starting a new task or file
+- Project focus has shifted
+- Past 75% of context limit
+- Model feels slow, vague, or inconsistent
+
+## Compact vs Clear
+
+- **compact**: Summarizes existing chat, preserving intent. Use mid-session to reclaim space.
+- **clear**: Wipes conversation entirely. Use when starting fresh or context is too cluttered.
+
+## Symptoms of Context Overload
+
+When your model feels "dumber" than usual, it's usually not the model — it's drowning in context:
+- Inconsistent responses on mid-conversation details
+- Forgetting requirements stated earlier
+- Vague or generic suggestions
+- Performance degradation on refactoring/debugging tasks

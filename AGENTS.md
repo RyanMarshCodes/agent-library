@@ -8,7 +8,7 @@ This file defines global, language-agnostic development standards for all code g
 
 - These rules apply everywhere unless a nested `AGENTS.md` (or folder-specific rules) provides more specific guidance for a language/framework/tooling.
 - When local rules conflict with this file, **follow the more specific local rules**.
-- When using these standards inside another project/repo, **that repo’s project-specific rules override this file** (e.g., its own `AGENTS.md`, `.cursor/rules`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, etc.).
+- When using these standards inside another project/repo, **that repo's project-specific rules override this file** (e.g., its own `AGENTS.md`, `.cursor/rules`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, etc.).
 - If a rule here is impractical in a specific change, document the exception (and rationale) in the PR/issue/commit message and keep the deviation as small as possible.
 
 ## AI agent workflow (prompt/context efficiency & safety)
@@ -18,8 +18,8 @@ This file defines global, language-agnostic development standards for all code g
 - Delegate in parallel when helpful: use subagents for exploration, running commands/tests, or reviewing changes; merge results back into one coherent solution.
 - Confirm before destructive actions: ask first for file deletions, large refactors/renames, broad rewrites, schema migrations, force pushes, or security-sensitive changes.
 - Keep changes small and reviewable: prefer incremental diffs, avoid drive-by rewrites, and preserve existing public APIs unless explicitly requested.
-- Always verify: run the most relevant fast checks (format/lint/unit tests) and fix any issues introduced; don’t ignore failing checks.
-- Communicate decisions and trade-offs: explain “why” succinctly; call out assumptions and how to validate them.
+- Always verify: run the most relevant fast checks (format/lint/unit tests) and fix any issues introduced; don't ignore failing checks.
+- Communicate decisions and trade-offs: explain "why" succinctly; call out assumptions and how to validate them.
 - Protect secrets and safety: never paste keys/tokens; avoid logging sensitive data; prefer environment variables and redaction.
 - **Detect shell before first command**: on first shell/terminal use in a session, identify the active shell — run `$PSVersionTable` (succeeds → PowerShell) or check `$SHELL`/`$0` (bash/zsh). Cache the result and use shell-appropriate syntax for the rest of the session. Never assume; never retry with a different syntax after failure — detect first.
 
@@ -37,11 +37,11 @@ This file defines global, language-agnostic development standards for all code g
 - **Compound tasks** (two or more distinct domains, or clearly requiring multiple specialist agents): invoke `OrchestratorAgent` (`agents/orchestrator.agent.md`). It will decompose, route, parallelise, and aggregate.
 - **Unclear scope**: use `OrchestratorAgent` to decompose before acting.
 
-When in doubt whether a task is compound: if completing it would naturally require switching mental models more than once (e.g. security + implementation + documentation), it’s compound.
+When in doubt whether a task is compound: if completing it would naturally require switching mental models more than once (e.g. security + implementation + documentation), it's compound.
 
 ### Token discipline (apply in every response)
 
-- No preamble. Never open with “Sure!”, “Great question”, or any acknowledgement. Start with action or answer.
+- No preamble. Never open with "Sure!", "Great question", or any acknowledgement. Start with action or answer.
 - No narration. Do not describe what you are about to do — do it.
 - No re-explanation. Do not repeat back what the user said.
 - Results only. Report outcomes and decisions, not process.
@@ -156,8 +156,8 @@ If a project doesn't have a `docs/` folder yet, create one using the structure d
 
 - Follow **latest/modern** language and framework official documentation best practices:
   - **C#/.NET**: Microsoft official conventions → see `knowledge/backend/code-standards/csharp/`
-  - **React**: React Team recommendations → see `knowledge/frontend/react/` (when present)
-  - **Angular**: Angular style guide → see `knowledge/frontend/angular/` (when present)
+  - **React**: React Team recommendations → see `knowledge/frontend/frameworks/react/` (when present)
+  - **Angular**: Angular style guide → see `knowledge/frontend/frameworks/angular/` (when present)
   - **Other**: Community-accepted conventions for the language/framework
 - Use consistent formatting (enforce with formatters)
 - Use meaningful variable and function names
@@ -188,78 +188,12 @@ If a project doesn't have a `docs/` folder yet, create one using the structure d
 
 ## Local MCP Server
 
-This project includes a local MCP server at `mcp-server/` (Ryan.MCP) that centralises all agents, standards documents, and external MCP connectors.
+This project includes a local MCP server at `mcp-server/` (Ryan.MCP) that centralises all agents, standards documents, and external MCP connectors. For setup instructions and the full tool reference, see `docs/mcp-reference.md`.
 
-### Starting the MCP Server
+### Proactive MCP Usage & Knowledge-graph Memory
 
-```bash
-cd mcp-server
-dotnet run --project src/Ryan.MCP.AppHost --launch-profile http
-```
+All workflow, tool usage, and convention for memory (knowledge graph) access is governed exclusively by the canonical instructions in [`global-config/_shared/memory-bridge-instructions.md`](global-config/_shared/memory-bridge-instructions.md). Do not duplicate, summarize, or paraphrase its content in this or any other file. Instead, refer directly to that document for details, triggers, patterns, examples, and fallback rules.
 
-### MCP Configuration
+- **Summary:** Use the documented memory tools for context recall and persistence as described in the canonical source. Never duplicate the process description. Any agent or user-facing documentation should point only to the canonical memory-bridge-instructions.
 
-**Claude Code** (one-time setup):
-```bash
-claude mcp add --transport http --scope global ryan-mcp http://localhost:8787/mcp
-```
-
-**Other IDEs** (Cursor, Rider, VS Code, etc.) — add to your MCP config:
-```json
-{
-  "mcpServers": {
-    "ryan-mcp": {
-      "type": "http",
-      "url": "http://localhost:8787/mcp"
-    }
-  }
-}
-```
-
-### Proactive MCP usage (non-negotiable triggers)
-
-When `ryan-mcp` is connected, **do not start reasoning from training data alone**. Call the appropriate tool first — these are not suggestions:
-
-| Situation | Tool to call |
-|-----------|-------------|
-| Starting any non-trivial coding task | `get_context(language, task)` |
-| Unsure which specialist agent to use | `recommend_agent(task)` |
-| Working in a stack you haven't seen in this session | `get_context(language)` |
-| Looking for a coding standard or convention | `search_documents(query)` |
-| Recalling a past architectural decision or convention | `call_external_mcp_tool` with connector `memory`, tool `search_nodes`, arguments `{"query":"..."}` |
-| Recording a new decision, convention, or pattern worth remembering | `call_external_mcp_tool` with connector `memory`, tools `create_entities` / `add_observations` / `create_relations` as needed |
-
-**`get_context` is the default entry point.** It returns the right agents and standards for your stack in one call. Call it before writing code, not after.
-
-**Knowledge-graph memory** lives on the external `memory` connector (`@modelcontextprotocol/server-memory` behind Aspire when `Projects:Memory:Enabled` is true). Ryan.MCP does **not** expose those tool names at the top level; invoke them through **`call_external_mcp_tool`**. Use `list_external_mcp_tools` with `connector: "memory"` to confirm names and schemas against your running server. This is separate from `docs/` (file-based session memory); the graph is queryable and relational.
-
-### Fallback (MCP not running or not connected)
-
-Fall back to the agent library at `agents/` and standards at `knowledge/global/`, `knowledge/backend/`, and `knowledge/frontend/` directly. Use `recommend_agent`-style reasoning manually: read the catalog at `catalog.json`, find the best-matching agent, load it.
-
-### MCP tool reference
-
-| Tool | Purpose |
-|------|---------|
-| `get_context(language, task?)` | Polyglot entry point — surfaces relevant agents + standards for any stack |
-| `recommend_agent(task)` | Returns the best-matching agent with activation instructions |
-| `list_agents(scope?)` | Browse all indexed agents |
-| `get_agent(name)` | Fetch full agent instructions |
-| `search_agents(query)` | Keyword search across agents |
-| `list_standards(tier?, language?)` | Browse indexed standards documents |
-| `read_document(tier, path)` | Fetch full content of a standards document |
-| `search_documents(query)` | Search across all standards content |
-| `list_external_connectors` | Show configured external MCP connectors (URLs, enabled flag) |
-| `list_external_mcp_tools(connector)` | List downstream tools for an enabled connector (e.g. `memory`) |
-| `call_external_mcp_tool(connector, tool, argumentsJson?)` | Invoke a downstream MCP tool; `argumentsJson` is a JSON object string |
-
-**Memory connector (`connector` = `memory`)** — tools from `@modelcontextprotocol/server-memory` (typical names): `create_entities`, `create_relations`, `add_observations`, `delete_entities`, `delete_observations`, `delete_relations`, `read_graph`, `search_nodes`, `open_nodes`. Example: `call_external_mcp_tool` with `connector` `memory`, `tool` `search_nodes`, `argumentsJson` `{"query":"authentication"}`.
-
-### Standards Precedence
-
-The MCP server applies standards in this order:
-1. `knowledge/global/` — official language/framework standards (official tier)
-2. `knowledge/backend/` — backend standards (organization tier)
-3. `knowledge/frontend/` — frontend standards (project tier)
-
-When rules conflict, the most specific rule wins.
+**If Ryan.MCP is not running:** fall back to agent/standards discovery using `agents/` and standards at `knowledge/global/`, `knowledge/backend/`, `knowledge/frontend/` directly. Use `catalog.json` to find the best-matching agent.

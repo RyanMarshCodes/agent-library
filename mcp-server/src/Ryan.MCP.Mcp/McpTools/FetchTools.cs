@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using ModelContextProtocol.Server;
 
 namespace Ryan.MCP.Mcp.McpTools;
@@ -13,6 +15,33 @@ public sealed partial class FetchTools(IHttpClientFactory httpClientFactory, ILo
     private const int AbsoluteMaxLength = 200_000;
 
     private static readonly JsonSerializerOptions JsonOptions = new();
+
+    /// <summary>
+    /// Element names that never contain useful content — always removed entirely.
+    /// </summary>
+    private static readonly HashSet<string> NeverContentElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "script", "style", "noscript", "svg", "iframe", "object", "embed",
+        "form", "button", "input", "select", "textarea",
+    };
+
+    /// <summary>
+    /// Element names to remove only when working on the full document (not within a found main area).
+    /// </summary>
+    private static readonly HashSet<string> ChromeElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "nav", "header", "footer", "aside",
+    };
+
+    /// <summary>
+    /// Block-level elements that should produce line breaks in text output.
+    /// </summary>
+    private static readonly HashSet<string> BlockElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "p", "div", "h1", "h2", "h3", "h4", "h5", "h6",
+        "li", "tr", "blockquote", "pre", "section", "article",
+        "dt", "dd", "figcaption", "summary",
+    };
 
     [McpServerTool(Name = "fetch")]
     [Description(
@@ -29,7 +58,8 @@ public sealed partial class FetchTools(IHttpClientFactory httpClientFactory, ILo
             return Err("url is required");
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal)
+             && !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal)))
             return Err("url must be a valid http or https URL");
 
         var limit = Math.Clamp(maxLength ?? DefaultMaxLength, 1, AbsoluteMaxLength);
@@ -102,49 +132,156 @@ public sealed partial class FetchTools(IHttpClientFactory httpClientFactory, ILo
     private static string Err(string message) =>
         JsonSerializer.Serialize(new { error = message });
 
+    // ── HTML-to-text extraction ──────────────────────────────────────────────
+
+    /// <summary>
+    /// DOM-based content extraction. Strategy:
+    /// 1. Strip elements that are never content (script, style, etc.)
+    /// 2. Locate the main content area (main, article, role=main) BEFORE stripping chrome
+    /// 3. If found, extract text from that subtree only
+    /// 4. If not found, strip chrome elements (nav, header, footer, aside), then extract from body
+    /// </summary>
     private static string ExtractTextFromHtml(string html)
     {
-        // Remove <script> and <style> blocks entirely
-        var text = ScriptPattern().Replace(html, string.Empty);
-        text = StylePattern().Replace(text, string.Empty);
-        text = CommentPattern().Replace(text, string.Empty);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
 
-        // Block-level elements → newlines so paragraphs separate naturally
-        text = BlockClosePattern().Replace(text, "\n");
-        text = LineBreakPattern().Replace(text, "\n");
+        if (doc.DocumentNode is null)
+            return string.Empty;
 
-        // Strip all remaining tags
-        text = TagPattern().Replace(text, string.Empty);
+        // Phase 1: Remove elements that are never content (script, style, etc.)
+        RemoveByTagName(doc.DocumentNode, NeverContentElements);
 
-        // Decode HTML entities (&amp; &lt; &nbsp; etc.)
-        text = WebUtility.HtmlDecode(text);
+        // Phase 2: Try to find the main content area BEFORE removing chrome
+        var contentRoot = FindMainContent(doc.DocumentNode);
 
-        // Normalize whitespace
-        text = InlineWhitespacePattern().Replace(text, " ");
-        text = ExcessiveNewlinesPattern().Replace(text, "\n\n");
+        if (contentRoot is null)
+        {
+            // No clear content area found — strip chrome tags and use body/document
+            RemoveByTagName(doc.DocumentNode, ChromeElements);
+            RemoveHiddenElements(doc.DocumentNode);
+            contentRoot = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
+        }
 
-        return text.Trim();
+        // Phase 3: Extract text with structure-aware formatting
+        var sb = new StringBuilder(html.Length / 4);
+        ExtractText(contentRoot, sb);
+
+        // Phase 4: Clean up whitespace
+        var result = sb.ToString();
+        result = InlineWhitespacePattern().Replace(result, " ");
+        result = ExcessiveNewlinesPattern().Replace(result, "\n\n");
+
+        return result.Trim();
     }
 
+    private static void RemoveByTagName(HtmlNode root, HashSet<string> tagNames)
+    {
+        // Collect all matching nodes first to avoid modifying tree during traversal
+        var toRemove = root.SelectNodes("//*")
+            ?.Where(n => n.NodeType == HtmlNodeType.Element && tagNames.Contains(n.Name))
+            .ToList();
+
+        if (toRemove is null) return;
+
+        foreach (var node in toRemove)
+            node.Remove();
+    }
+
+    /// <summary>
+    /// Remove elements with aria-hidden="true" or role="presentation" (decorative/hidden).
+    /// </summary>
+    private static void RemoveHiddenElements(HtmlNode root)
+    {
+        var toRemove = root.SelectNodes("//*[@aria-hidden='true' or @role='presentation']")?.ToList();
+        if (toRemove is null) return;
+
+        foreach (var node in toRemove)
+            node.Remove();
+    }
+
+    /// <summary>
+    /// Locate the main content area using semantic HTML elements and common patterns.
+    /// Returns null if no sufficiently large content area is found.
+    /// </summary>
+    private static HtmlNode? FindMainContent(HtmlNode root)
+    {
+        // Try semantic elements first (most reliable)
+        HtmlNode?[] candidates =
+        [
+            root.SelectSingleNode("//main"),
+            root.SelectSingleNode("//article"),
+            root.SelectSingleNode("//*[@role='main']"),
+            root.SelectSingleNode("//*[@id='content']"),
+            root.SelectSingleNode("//*[@id='main-content']"),
+            root.SelectSingleNode("//*[@id='primary-content']"),
+        ];
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate is not null && candidate.InnerText.Trim().Length > 200)
+                return candidate;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Recursively extract text from the DOM tree, respecting block-level element boundaries.
+    /// </summary>
+    private static void ExtractText(HtmlNode node, StringBuilder sb)
+    {
+        switch (node.NodeType)
+        {
+            case HtmlNodeType.Text:
+                var text = WebUtility.HtmlDecode(node.InnerText);
+                if (!string.IsNullOrWhiteSpace(text))
+                    sb.Append(text);
+                break;
+
+            case HtmlNodeType.Element:
+                // Skip hidden elements within the content area
+                if (IsHiddenElement(node))
+                    break;
+
+                var isBlock = BlockElements.Contains(node.Name);
+                var isHeading = node.Name.Length == 2 && node.Name[0] == 'h'
+                    && char.IsDigit(node.Name[1]);
+
+                if (string.Equals(node.Name, "br", StringComparison.OrdinalIgnoreCase))
+                {
+                    sb.AppendLine();
+                    break;
+                }
+
+                if (isBlock || isHeading)
+                    sb.AppendLine();
+
+                // Markdown-style heading prefix for structure
+                if (isHeading)
+                    sb.Append(new string('#', node.Name[1] - '0')).Append(' ');
+
+                foreach (var child in node.ChildNodes)
+                    ExtractText(child, sb);
+
+                if (isBlock || isHeading)
+                    sb.AppendLine();
+                break;
+
+            case HtmlNodeType.Document:
+                foreach (var child in node.ChildNodes)
+                    ExtractText(child, sb);
+                break;
+        }
+    }
+
+    private static bool IsHiddenElement(HtmlNode node) =>
+        string.Equals(node.GetAttributeValue("aria-hidden", ""), "true", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(node.GetAttributeValue("hidden", null), "", StringComparison.Ordinal)
+        || node.GetAttributeValue("style", "").Contains("display:none", StringComparison.OrdinalIgnoreCase)
+        || node.GetAttributeValue("style", "").Contains("display: none", StringComparison.OrdinalIgnoreCase);
+
     // Source-generated regexes — compiled once, allocation-free matching
-    [GeneratedRegex(@"<script[^>]*>[\s\S]*?</script>", RegexOptions.IgnoreCase)]
-    private static partial Regex ScriptPattern();
-
-    [GeneratedRegex(@"<style[^>]*>[\s\S]*?</style>", RegexOptions.IgnoreCase)]
-    private static partial Regex StylePattern();
-
-    [GeneratedRegex(@"<!--[\s\S]*?-->")]
-    private static partial Regex CommentPattern();
-
-    [GeneratedRegex(@"</(p|div|h[1-6]|li|tr|td|th|blockquote|pre|section|article|header|footer|nav|main)\s*>", RegexOptions.IgnoreCase)]
-    private static partial Regex BlockClosePattern();
-
-    [GeneratedRegex(@"<br\s*/?>", RegexOptions.IgnoreCase)]
-    private static partial Regex LineBreakPattern();
-
-    [GeneratedRegex(@"<[^>]+>")]
-    private static partial Regex TagPattern();
-
     [GeneratedRegex(@"[ \t]+")]
     private static partial Regex InlineWhitespacePattern();
 

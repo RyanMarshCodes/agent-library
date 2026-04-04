@@ -85,12 +85,12 @@ public sealed class ModelMappingTools(
         [Description("Agent name")] string agentName,
         [Description("Primary model (e.g. 'claude-opus-4-6', 'gpt-5.4-nano')")] string primaryModel,
         [Description("Tier (e.g. 'frontier', 'strong-coding', 'capable')")] string tier,
-        [Description("First alternative model")] string? altModel1,
-        [Description("Second alternative model")] string? altModel2,
-        [Description("Input cost per 1M tokens")] decimal? costPer1MIn,
-        [Description("Output cost per 1M tokens")] decimal? costPer1MOut,
-        [Description("Free-text notes")] string? notes,
-        CancellationToken ct)
+        [Description("First alternative model")] string? altModel1 = null,
+        [Description("Second alternative model")] string? altModel2 = null,
+        [Description("Input cost per 1M tokens")] decimal? costPer1MIn = null,
+        [Description("Output cost per 1M tokens")] decimal? costPer1MOut = null,
+        [Description("Free-text notes")] string? notes = null,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(agentName) || string.IsNullOrWhiteSpace(primaryModel) || string.IsNullOrWhiteSpace(tier))
         {
@@ -124,8 +124,8 @@ public sealed class ModelMappingTools(
     [McpServerTool(Name = "sync_model_mappings")]
     [Description("Re-sync all agent model mappings from frontmatter into Postgres. Manual overrides (synced_from='manual') are preserved by default.")]
     public async Task<string> SyncModelMappings(
-        [Description("If true, also overwrite manual overrides (default false)")] bool overwriteManual,
-        CancellationToken ct)
+        [Description("If true, also overwrite manual overrides (default false)")] bool overwriteManual = false,
+        CancellationToken ct = default)
     {
         var result = await syncService.SyncAsync(preserveManual: !overwriteManual, ct).ConfigureAwait(false);
         return JsonSerializer.Serialize(new
@@ -141,9 +141,9 @@ public sealed class ModelMappingTools(
     [McpServerTool(Name = "recommend_model")]
     [Description("Recommend the best model for a task or agent. Filters by configured providers. If agent_name is given, returns its mapping directly. If only task is given, finds the best agent first then returns its model.")]
     public async Task<string> RecommendModel(
-        [Description("Task description (e.g. 'write unit tests for C# service'). Required if agent_name not provided.")] string? task,
-        [Description("Agent name to look up directly. If provided, task is ignored.")] string? agentName,
-        CancellationToken ct)
+        [Description("Task description (e.g. 'write unit tests for C# service'). Required if agent_name not provided.")] string? task = null,
+        [Description("Agent name to look up directly. If provided, task is ignored.")] string? agentName = null,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(task) && string.IsNullOrWhiteSpace(agentName))
         {

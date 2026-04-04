@@ -21,6 +21,10 @@ public sealed partial class ModelMappingSyncService(
         RegexOptions.IgnoreCase | RegexOptions.Multiline)]
     private static partial Regex ModelLineRegex();
 
+    // Matches a YAML frontmatter closing delimiter: "---" at the start of a line
+    [GeneratedRegex(@"^---\s*$", RegexOptions.Multiline)]
+    private static partial Regex FrontmatterDelimiterRegex();
+
     /// <summary>
     /// Syncs all agent frontmatter model fields into the agent_model_mappings table.
     /// Manual overrides (synced_from = 'manual') are preserved by default.
@@ -81,20 +85,17 @@ public sealed partial class ModelMappingSyncService(
             return null;
         }
 
-        // Find frontmatter delimiters
-        var firstDelim = content.IndexOf("---", StringComparison.Ordinal);
-        if (firstDelim < 0)
+        // Find frontmatter delimiters (must be "---" at the start of a line)
+        // Using regex to avoid false matches on "---" inside YAML comments
+        var delimMatches = FrontmatterDelimiterRegex().Matches(content);
+        if (delimMatches.Count < 2)
         {
             return null;
         }
 
-        var secondDelim = content.IndexOf("---", firstDelim + 3, StringComparison.Ordinal);
-        if (secondDelim < 0)
-        {
-            return null;
-        }
-
-        var frontmatterBlock = content[(firstDelim + 3)..secondDelim];
+        var firstDelim = delimMatches[0];
+        var secondDelim = delimMatches[1];
+        var frontmatterBlock = content[(firstDelim.Index + firstDelim.Length)..secondDelim.Index];
 
         var match = ModelLineRegex().Match(frontmatterBlock);
         if (!match.Success)
@@ -103,7 +104,8 @@ public sealed partial class ModelMappingSyncService(
         }
 
         var primaryModel = match.Groups[1].Value.Trim();
-        var tier = match.Groups[2].Value.Trim();
+        // Normalize tier: replace "/" with "-" (e.g. "strong/coding" → "strong-coding")
+        var tier = match.Groups[2].Value.Trim().Replace('/', '-');
         string? alt1 = null, alt2 = null;
 
         if (match.Groups[3].Success)

@@ -1,141 +1,41 @@
 # C# Naming Conventions
 
-Based on Microsoft [Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines) and [Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
+Follow [Microsoft Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines). Standard PascalCase/camelCase rules apply — only non-obvious conventions are listed here.
 
----
-
-## General Rules
-
-### PascalCase
-Use PascalCase for:
-- Class names
-- Interface names
-- Struct names
-- Delegate names
-- Method names
-- Property names
-- Event names
-- Namespace names
-- Public members
-- Constant names (fields and local constants)
+## Field Prefixes
 
 ```csharp
-public class CustomerService { }
-public interface IWorkerQueue { }
-public struct Point { }
-public delegate void EventHandler(object sender, EventArgs e);
-public void ProcessOrder() { }
-public string CustomerName { get; set; }
-public event EventHandler OrderProcessed;
+private int _orderCount;                          // _ prefix for private instance fields
+private static HttpClient s_httpClient;           // s_ prefix for private static fields
+private static readonly Settings s_defaults;      // s_ for static readonly too
+private const int MaxRetries = 3;                 // PascalCase for constants (no prefix)
 ```
 
-### camelCase
-Use camelCase for:
-- Method arguments
-- Local variables
-- Private fields (with `_` prefix)
+## Enums
 
-```csharp
-public void ProcessOrder(OrderRequest request)
-{
-    var orderDetails = request.Details;
-    var _internalCache = new Dictionary<string, object>();
-}
-```
+- Non-flags: singular nouns (`OrderStatus`)
+- Flags: plural nouns (`[Flags] enum FileModes`)
+- Never prefix values with the type name (`Active`, not `OrderStatusActive`)
 
----
+## Type Parameters
 
-## Special Naming Rules
+Use descriptive `T`-prefixed names when multiple; single `T` only when self-explanatory:
 
-### Interfaces
-Prefix with `I` capital letter:
-```csharp
-public interface IEnumerable { }
-public interface IWorkerQueue { }
-public interface IConfigurationProvider { }
-```
-
-### Attributes
-Suffix with `Attribute`:
-```csharp
-public class SerializableAttribute : Attribute { }
-public class XmlElementAttribute : Attribute { }
-```
-
-### Enums
-- **Non-flags**: Use singular nouns
-- **Flags**: Use plural nouns
-
-```csharp
-public enum HttpStatusCode { OK, NotFound, Error }
-[Flags]
-public enum FileModes { Read, Write, Execute }
-```
-
-### Type Parameters
-Use descriptive names, or single letter `T` if self-explanatory:
 ```csharp
 public class Dictionary<TKey, TValue> { }
 public interface IRepository<T> where T : class { }
-public class Func<T, TResult> { }
 ```
 
-### Static Fields
-Prefix with `s_`:
-```csharp
-private static s_instance;
-private static readonly s_defaultSettings = new Settings();
+## Namespace & Assembly
+
+```
+Contoso.Commerce.OrderProcessing   // reverse domain, functional grouping
+Contoso.Commerce.dll               // assembly matches primary namespace
 ```
 
----
+## Key Avoidances
 
-## Naming Avoidances
-
-### DO NOT Use
-- **Underscores** in identifiers (except private fields with `_` prefix)
-- **Hungarian notation** (e.g., `strName`, `iCount`)
-- **Abbreviations** unless widely accepted (e.g., `GetWindow`, not `GetWin`)
-- **Keywords** as names (use `@` prefix if unavoidable: `@class`)
-- **Two consecutive underscores** (`__`) - reserved for compiler
-
-### Prefer Clarity Over Brevity
-```csharp
-// Good
-public bool CanScrollHorizontally { get; }
-public string CustomerFullName { get; }
-
-// Avoid
-public bool ScrollableX { get; }  // What is X?
-public string CustName { get; }   // Ambiguous
-```
-
----
-
-## Word Choice
-
-### DO
-- Choose easily readable identifier names
-- Use meaningful and descriptive names
-
-### Avoid
-- Cryptic abbreviations
-- Single letters except for simple loop counters (`i`, `j`, `k`)
-- Language-specific type names in parameters (e.g., `string` parameter named `string`)
-
----
-
-## Assembly and Namespace Naming
-
-### Assemblies
-Name assemblies that represent their primary purpose:
-```
-Contoso.Commerce.dll
-Contoso Finance.Core.dll
-```
-
-### Namespaces
-Use reverse domain name notation:
-```csharp
-namespace Contoso.Commerce.OrderProcessing { }
-namespace Contoso.Finance.Payroll { }
-```
+- No Hungarian notation (`strName`, `iCount`)
+- No abbreviations unless universally understood (`Id`, `Url`, `Http` are fine)
+- No language keywords as names (use `@class` only if unavoidable)
+- Prefer `CanScrollHorizontally` over `ScrollableX` — clarity over brevity

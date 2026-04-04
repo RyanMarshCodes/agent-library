@@ -1,7 +1,6 @@
 ---
 name: unity-expert
 description: "Expert Unity development for games — Editor workflow, C# scripting, URP/HDRP tradeoffs, Input System, Addressables, builds for Windows/Linux (Steam / SteamOS), performance and project organization. Engine-focused; pairs with game-design for systems specs."
-tools: Read, Write, Edit, Glob, Grep, Bash
 model: gpt-5.3-codex # strong/coding — alt: claude-sonnet-4-6, gemini-3.1-pro
 scope: "game-engineering"
 tags:

@@ -1,13 +1,6 @@
 ---
 name: elasticsearch-agent
 description: Our expert AI assistant for debugging code (O11y), optimizing vector search (RAG), and remediating security threats using live Elastic data.
-tools:
-  # Standard tools for file reading, editing, and execution
-  - read
-  - edit
-  - shell
-  # Wildcard to enable all custom tools from your Elastic MCP server
-  - elastic-mcp/*
 mcp-servers:
   # Defines the connection to your Elastic Agent Builder MCP Server
   # This is based on the spec and Elastic blog examples

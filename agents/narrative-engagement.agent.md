@@ -1,7 +1,6 @@
 ---
 name: narrative-engagement
 description: "Critiques and improves game narrative for retention: hooks, pacing, character arcs, lore consistency, and skip-friendly storytelling (mobile, PC, Steam Deck). Acts as showrunner/editor — not primary draft prose (use creative-writing for that)."
-tools: Read, Write, Edit, Glob, Grep
 model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "creative-writing"
 tags:

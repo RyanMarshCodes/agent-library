@@ -45,7 +45,7 @@ public class LlmProviderOptions
 public class MemoryStoreOptions
 {
     public string Provider { get; set; } = "postgres";
-    public string ConnectionString { get; set; } = "Host=localhost;Port=8810;Database=ryan_memory;Username=postgres;Password=postgres";
+    public string ConnectionString { get; set; } = "Host=localhost;Port=8810;Database=ryan_mcp;Username=postgres;Password=postgres";
     public int CommandTimeoutSeconds { get; set; } = 30;
 }
 

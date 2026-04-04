@@ -2,275 +2,31 @@
 
 Based on Microsoft [Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
 
----
-
-## Formatting
-
-### Indentation
-- Use 4 spaces for indentation
-- No tabs
-- Set `tab_width = 4`
-
-### Line Endings
-- Use `crlf` (Windows) or `lf` (cross-platform)
-- Be consistent within the project
-
-### New Lines
-```csharp
-// Place opening brace on new line for methods, properties, control blocks
-void MyMethod()
-{
-    if (condition)
-    {
-        // code
-    }
-}
-
-// New line before else, catch, finally
-if (condition)
-{
-    // code
-}
-else
-{
-    // code
-}
-
-try
-{
-    // code
-}
-catch (Exception ex)
-{
-    // code
-}
-finally
-{
-    // code
-}
-```
-
-### Spacing
-- Use spaces around binary operators: `a + b`
-- No space between method name and parenthesis: `Method()`
-- Space after commas: `Method(a, b, c)`
-- Space before colon in inheritance: `class C : I`
-- Space after cast: `(string)value`
+> **Formatting is enforced by `.editorconfig`** — see `static-analysis.md` for the template. Do not duplicate formatting rules in code reviews; the tooling handles it.
 
 ---
 
-## Using Directives
+## Language Feature Preferences
 
-### Placement
-Place `using` directives outside the namespace declaration:
-```csharp
-using Azure;
-using System.Collections.Generic;
-
-namespace CoolStuff.AwesomeFeature
-{
-    // code
-}
-```
-
-### Ordering
-- Sort `System.*` directives first
-- Then sort other directives alphabetically
-- Separate with blank line between groups
-
-### Global Using (C# 10+)
-Use global usings for frequently used namespaces to reduce boilerplate:
-```csharp
-global using System;
-global using System.Collections.Generic;
-global using Microsoft.Extensions.Logging;
-```
-
----
-
-## Var Usage
-
-### When to Use
-Use `var` when the type is apparent from the right side:
-```csharp
-var list = new List<int>();
-var customer = new Customer();
-var settings = Options.Default;
-```
-
-### When to Avoid
-Avoid `var` when the type is not obvious:
-```csharp
-// Hard to infer type - use explicit type
-var dict = new Dictionary<string, List<int>>();
-
-// Use explicit type in foreach
-foreach (var item in collection)  // OK if type is obvious
-foreach (KeyValuePair<string, object> item in collection)  // Explicit for complex types
-```
-
----
-
-## Expression-Bodied Members
-
-### Use For
-- **Accessors**: `public int Length => _values.Length;`
-- **Indexers**: `public T this[int index] => _items[index];`
-- **Lambdas**: `Func<int, int> double = x => x * 2;`
-
-### Avoid For
-- **Constructors**: Use block body
-- **Destructors**: Use block body
-
-```csharp
-// Good
-public string FullName => $"{FirstName} {LastName}";
-public int Count => _items.Count;
-
-// Avoid
-public Person(string name) => Name = name;  // Too complex for primary constructor context
-```
-
----
-
-## LINQ Usage
-
-### Method Syntax
-Use for simple queries:
-```csharp
-var results = items.Where(x => x.IsActive).OrderBy(x => x.Name);
-```
-
-### Query Syntax
-Use for complex queries or when it improves readability:
-```csharp
-var query = from order in orders
-            join customer in customers on order.CustomerId equals customer.Id
-            where order.Date > startDate
-            select new { order.Id, customer.Name };
-```
-
----
-
-## String Handling
-
-### Interpolation
-Use for simple cases:
-```csharp
-var message = $"Hello, {customerName}!";
-var displayName = $"{lastName}, {firstName}";
-```
-
-### StringBuilder
-Use for concatenation in loops:
-```csharp
-var sb = new StringBuilder();
-foreach (var item in items)
-{
-    sb.Append(item);
-    sb.Append(", ");
-}
-```
-
-### Raw String Literals
-Use for multiline strings:
-```csharp
-var json = """
-    {
-        "name": "value",
-        "items": [1, 2, 3]
-    }
-    """;
-```
-
----
-
-## Collection Initialization
-
-### Collection Expressions (C# 12+)
-```csharp
-string[] vowels = ["a", "e", "i", "o", "u"];
-List<int> numbers = [1, 2, 3];
-Dictionary<string, int> ages = ["John": 30, "Jane": 25];
-```
-
-### Traditional
-```csharp
-var list = new List<int> { 1, 2, 3 };
-var dict = new Dictionary<string, int>
-{
-    ["John"] = 30,
-    ["Jane"] = 25
-};
-```
-
----
-
-## Delegates
-
-### Use Func<> and Action<>
-```csharp
-Action<string> logger = x => Console.WriteLine(x);
-Func<int, int, int> add = (x, y) => x + y;
-Func<string, bool> validator = s => !string.IsNullOrEmpty(s);
-```
-
----
-
-## Member Access
-
-### Static Members
-Call using class name:
-```csharp
-Console.WriteLine();
-File.Open(path, mode);
-Task.FromResult(value);
-```
-
-### Avoid this. Qualification
-```csharp
-public class Customer
-{
-    private string _name;
-    
-    public void SetName(string name)
-    {
-        _name = name;  // Not this._name
-    }
-}
-```
-
----
-
-## Records
-
-### Primary Constructor Parameters
-Use PascalCase for parameters (becomes public properties):
-```csharp
-public record Person(string FirstName, string LastName)
-{
-    public string FullName => $"{FirstName} {LastName}";
-}
-```
-
----
-
-## File-Scoped Namespaces (C# 10+)
-
-Use for cleaner file organization:
-```csharp
-namespace MyNamespace;
-
-public class MyClass { }
-```
+| Feature | Preference | Notes |
+|---------|-----------|-------|
+| `var` | Use when type is apparent from RHS | Explicit type for complex generics or ambiguous returns |
+| Expression-bodied members | Accessors, indexers, lambdas | Avoid for constructors and destructors |
+| LINQ syntax | Method syntax for simple chains | Query syntax only when joins improve readability |
+| String building | Interpolation for simple; `StringBuilder` for loops | Raw string literals (`"""`) for multiline |
+| Collection init | C# 12 collection expressions (`[1, 2, 3]`) | Fall back to traditional for older targets |
+| Delegates | `Func<>` / `Action<>` over named delegates | |
+| File-scoped namespaces | Always (C# 10+) | |
+| `using` placement | Outside namespace, `System.*` first | Global usings for frequently used namespaces |
+| `this.` qualification | Never — use `_` prefix for fields | |
 
 ---
 
 ## Program.cs / Hosting Configuration
 
-Keep `Program.cs` minimal — it should only wire things up, not contain logic.
+Keep `Program.cs` minimal — infrastructure wiring only, no business logic.
 
-### Preferred Pattern: Extension Methods per Layer
+### Pattern: Extension Methods per Layer
 
 ```csharp
 // Program.cs - ~15 lines max
@@ -291,9 +47,7 @@ app.UseCors();
 app.Run();
 ```
 
-### Extension Method Structure
-
-Each layer registers its own services:
+Each layer registers its own services via a `DependencyInjection` static class:
 
 ```csharp
 // Application/DependencyInjection.cs
@@ -303,43 +57,7 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-        
         return services;
-    }
-}
-
-// Infrastructure/DependencyInjection.cs
-public static class DependencyInjection
-{
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddDbContext<AppDbContext>(opts =>
-            opts.UseSqlServer(configuration.GetConnectionString("Default")));
-            
-        services.AddScoped<IOrderRepository, OrderRepository>();
-        
-        return services;
-    }
-}
-
-// Api/DependencyInjection.cs
-public static class DependencyInjection
-{
-    public static IServiceCollection AddApi(this IServiceCollection services, IHostEnvironment environment)
-    {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-        services.AddCors("AllowAll");
-        
-        return services;
-    }
-    
-    public static WebApplication UseApi(this WebApplication app)
-    {
-        app.UseSwagger();
-        app.UseCors();
-        
-        return app;
     }
 }
 ```
@@ -350,27 +68,6 @@ public static class DependencyInjection
 |------|-----------|
 | One `Add<Layer>()` call per project | Clear ownership |
 | One `Use<Feature>()` call per feature | Easy to scan |
-| No inline configuration in Program.cs | Use IOptions pattern |
-| No business logic in Program.cs | It's infrastructure wiring only |
+| No inline configuration in Program.cs | Use `IOptions` pattern |
+| No business logic in Program.cs | Infrastructure wiring only |
 | Group related registrations together | Easier to find and modify |
-
-### Anti-Patterns to Avoid
-
-```csharp
-// BAD - Program.cs is too busy
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<Db>(...);
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddMediatR(...);
-builder.Services.AddAutoMapper(...);
-builder.Services.AddFluentValidation(...);
-builder.Services.AddAuthentication(...);
-builder.Services.AddAuthorization(...);
-builder.Services.AddSwaggerGen(...);
-// ... 100 more lines
-
-// GOOD - Delegate to extension methods
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApi(builder.Environment);
-```

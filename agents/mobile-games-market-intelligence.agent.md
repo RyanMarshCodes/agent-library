@@ -1,7 +1,6 @@
 ---
 name: mobile-games-market-intelligence
 description: "Mobile games market and store intelligence — iOS/Android competitive landscape, genre trends, top-chart dynamics, feature and monetization meta, retention patterns, and what typically works or fails. Uses fresh research; not a substitute for paid analytics (data.ai, Sensor Tower)."
-tools: Read, Write, Edit, Glob, Grep
 model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "mobile-market-intelligence"
 tags:
