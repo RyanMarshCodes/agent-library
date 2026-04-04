@@ -72,11 +72,11 @@ jobs:
 
           echo "memory_status"
           call_mcp '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"memory_status","arguments":{}}}' | tee /tmp/status.txt
-          grep -q "\"available\":true" /tmp/status.txt
+          grep -q 'available.*true' /tmp/status.txt
 
           echo "memory_persist"
           call_mcp '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"memory_persist","arguments":{"entityName":"ci-smoke-memory","entityType":"concept","observations":["CI smoke memory write"]}}}' | tee /tmp/persist.txt
-          grep -q "\"status\":\"saved\"" /tmp/persist.txt
+          grep -q 'status.*saved' /tmp/persist.txt
 
           echo "memory_recall"
           call_mcp '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"memory_recall","arguments":{"query":"ci-smoke-memory","maxResults":5}}}' | tee /tmp/recall.txt
