@@ -84,7 +84,7 @@ jobs:
 
           echo "get_context"
           call_mcp '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"get_context","arguments":{"language":"csharp","task":"write tests"}}}' | tee /tmp/context.txt
-          grep -q "recommendedAgents" /tmp/context.txt
+          grep -q 'agents.*count' /tmp/context.txt
 
       - name: Print logs on failure
         if: failure()
