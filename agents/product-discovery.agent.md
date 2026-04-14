@@ -1,7 +1,7 @@
 ---
 name: "Product Discovery"
 description: "Takes a rough domain idea and produces a complete buildable product definition — domain research, competitor gap analysis, niche selection, feature set, requirements spec, data model"
-model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "product-strategy"
 tags: ["product", "discovery", "requirements", "feature-definition", "domain-research", "competitor-analysis", "spec", "indie-dev"]
 ---

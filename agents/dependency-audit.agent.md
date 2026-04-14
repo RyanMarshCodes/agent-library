@@ -1,7 +1,7 @@
 ---
 name: "Dependency Audit Agent"
 description: "Audits all project dependencies for known vulnerabilities, license issues, outdatedness, and unused packages — produces a prioritized remediation report."
-model: gpt-5.4-nano # efficient — alt: big-pickle, gemini-3-flash
+model: claude-haiku-4-5 # efficient — alt: gemini-3-flash, gpt-5.4-nano
 scope: "security-audit"
 tags: ["dependencies", "vulnerabilities", "cve", "license", "audit", "any-stack"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: "Architecture Decision Agent"
 description: "Facilitates and documents Architecture Decision Records — grounding decisions in evidence, recording alternatives with trade-offs, and maintaining a sequentially numbered index."
-model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "architecture"
 tags: ["adr", "architecture", "documentation", "decision-records", "trade-offs"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: "PR Description Agent"
 description: "Generates structured, high-quality GitHub pull request descriptions from branch diff, commit log, and context."
-model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+model: claude-haiku-4-5 # efficient — alt: gemini-3-flash, gpt-5.4-nano
 scope: "documentation"
 tags: ["pull-request", "documentation", "git", "github", "code-review"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: lore-ip-screening
 description: "Screens game lore names (characters, factions, locations, items, abilities, titles) for trademark, copyright, and trade-dress risk flags — heuristic review only, not legal clearance. Suggests safer renames and what to verify with qualified IP counsel."
-model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+model: claude-haiku-4-5 # efficient — alt: gemini-3-flash, gpt-5.4-nano
 scope: "content-compliance"
 tags:
   [

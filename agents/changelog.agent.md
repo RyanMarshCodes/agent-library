@@ -1,7 +1,7 @@
 ---
 name: "Changelog Agent"
 description: "Generates and maintains CHANGELOG.md from git history, tags, or PR descriptions using Keep a Changelog format with user-facing language."
-model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+model: claude-haiku-4-5 # efficient — alt: gemini-3-flash, gpt-5.4-nano
 scope: "documentation"
 tags: ["changelog", "documentation", "git", "versioning", "keep-a-changelog"]
 ---

@@ -1,7 +1,7 @@
 ---
 description: "Provide expert Azure Principal Architect guidance using Azure Well-Architected Framework principles and Microsoft best practices."
 name: "Azure Principal Architect mode instructions"
-model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "cloud-architecture"
 tags: ["azure", "well-architected", "cloud", "architecture", "microsoft"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: graphql-architect
 description: "Design and evolve GraphQL schemas — federation architecture, query optimization, and distributed graph design."
-model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+model: claude-sonnet-4-6 # strong/analysis — alt: gpt-5.3-codex, gemini-3.1-pro
 scope: "api-design"
 tags: ["graphql", "federation", "apollo", "schema-design", "api", "microservices"]
 ---
