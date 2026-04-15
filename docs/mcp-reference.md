@@ -78,6 +78,25 @@ claude mcp add --transport http --scope global ryan-mcp http://localhost:8787/mc
 
 **Memory connector** (`connector` = `memory`) — typical tools: `create_entities`, `create_relations`, `add_observations`, `delete_entities`, `delete_observations`, `delete_relations`, `read_graph`, `search_nodes`, `open_nodes`.
 
+## Observability
+
+All tool calls are logged with structured scope enrichment to Serilog → OpenTelemetry → Aspire dashboard.
+
+**Scope properties per tool call:**
+- `ToolName` — e.g. `MemoryTools.MemoryRecall`
+- `Query`, `MaxResults`, `WorkingDirectory`, `Url`, etc. — relevant parameters
+
+**Client connection logging:**
+- The first JSON-RPC `initialize` request is parsed to extract `clientInfo.name` and `clientInfo.version`
+- Each connect logs: `ClientName`, `ClientVersion`, `ClientIP`, `UserAgent`, `TraceId`
+
+**Viewing traces:**
+- Aspire dashboard: `http://localhost:17282` (token from `~/.aspire/credentials.json`)
+- OTEL endpoint: `http://localhost:4317` (gRPC)
+- Service name in traces: `Ryan.MCP`
+
+**For agents running outside Ryan.MCP**, source `global-config/_shared/observability-env.sh` to get OTEL env vars pointing at the Aspire OTEL endpoint.
+
 ## Standards Precedence
 
 1. `knowledge/global/` — official language/framework standards (official tier)
