@@ -1,13 +1,18 @@
 using System.ComponentModel;
 using System.Text.Json;
 using ModelContextProtocol.Server;
+using Ryan.MCP.Mcp.Configuration;
 using Ryan.MCP.Mcp.Services;
 using Ryan.MCP.Mcp.Services.ModelMapping;
 
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingStore modelMappings, ILogger<AgentTools> logger)
+public sealed class AgentTools(
+    AgentIngestionCoordinator agents,
+    IModelMappingStore modelMappings,
+    McpOptions options,
+    ILogger<AgentTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -157,6 +162,7 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("Get the best agent recommendation for a specific task. Returns score, reasons, model recommendation, and activation instructions. Best for: 'fix my C# bug', 'design an API', 'migrate to .NET 8', 'write tests for my react component'.")]
     public async Task<string> RecommendAgent(
         [Description("Task description in natural language, e.g. 'security audit of my C# API' or 'refactor this class' or 'write unit tests'")] string task,
+        [Description("Optional AI client tool (e.g. 'opencode', 'copilot', 'claude'). If omitted, uses McpOptions.ModelMapping.ActiveClientTool.")] string? clientTool,
         CancellationToken cancellationToken)
     {
         using var scope = logger.BeginScope(new Dictionary<string, object?>
@@ -196,14 +202,7 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
                 top.Score,
                 top.Reasons,
                 model = mapping is not null
-                    ? new
-                    {
-                        primary = mapping.PrimaryModel,
-                        mapping.Tier,
-                        provider = mapping.PrimaryProvider,
-                        alternatives = new[] { mapping.AltModel1, mapping.AltModel2 }
-                            .Where(a => a is not null),
-                    }
+                    ? BuildModelRecommendation(mapping, clientTool)
                     : null,
                 fetch = $"get_agent(\"{top.Agent.Name}\")",
             },
@@ -238,5 +237,33 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
             snapshot.ByScope,
             snapshot.ByFormat,
         }, JsonOptions);
+    }
+
+    private object BuildModelRecommendation(AgentModelMapping mapping, string? clientTool)
+    {
+        var effective = ModelToolOverrideResolver.ResolveEffectiveModel(
+            mapping,
+            requestedTool: clientTool,
+            configuredTool: options.ModelMapping.ActiveClientTool);
+
+        return new
+        {
+            primary = effective.EffectiveModel,
+            mapping.Tier,
+            provider = ResolveProvider(effective.EffectiveModel),
+            overrideApplied = effective.UsedOverride,
+            tool = effective.EffectiveTool,
+            toolOverrides = ModelToolOverrideResolver.ParseToolOverrides(mapping.ToolOverridesJson),
+            alternatives = new[] { mapping.AltModel1, mapping.AltModel2 }
+                .Where(a => a is not null),
+        };
+    }
+
+    private string? ResolveProvider(string modelName)
+    {
+        return options.LlmProviders
+            .Where(p => p.Enabled)
+            .FirstOrDefault(p => p.Models.Contains(modelName, StringComparer.OrdinalIgnoreCase))
+            ?.Name;
     }
 }

@@ -3,33 +3,13 @@
     "ryan-mcp": {
       "url": "http://localhost:8787/mcp"
     },
-    "chrome-devtools": {
-      "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
-      ],
-      "command": "npx"
-    },
-    "aspire": {
-      "args": [
-        "agent",
-        "mcp"
-      ],
-      "command": "aspire"
-    },
-    "playwright": {
-      "args": [
-        "@playwright/mcp@latest"
-      ],
-      "command": "npx"
-    },
     "filesystem": {
+      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
-      ],
-      "command": "npx"
+      ]
     }
   }
 }

@@ -92,6 +92,14 @@ Memory usage should be **automatic and contextual** — not dependent on the use
 4. If memory is unavailable, continue normally without blocking.
 5. Prefer `memory_recall(query, maxResults=3)` over `memory_read()` — the latter dumps the entire graph.
 
+## Dynamic MCP Invocation Policy
+
+- Treat MCP tools as on-demand capabilities, not default steps.
+- Prefer local workspace context first (files, symbols, tests) before MCP calls.
+- Invoke MCP only when it provides unique value for the current task.
+- If a task is trivial or fully answerable from local context, skip MCP entirely.
+- For memory workflows, use at most one focused recall query before expanding scope.
+
 ---
 
 # Context Window Management

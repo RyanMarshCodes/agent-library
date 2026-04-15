@@ -2,7 +2,23 @@
 
 !include "D:/Projects/agent-configurations/global-config/_shared/context-management.md"
 
-This file defines global, language-agnostic development standards for all code generated in this project.
+## Canonical AI/Agent Workflows
+
+All agents and tools (Copilot, Claude, Cursor, OpenCode, Antigravity, etc.) must support the baseline workflows defined in:
+
+  mcp-server/knowledgebase/WORKFLOW_COMMANDS.md
+
+These workflows include /spec, /validate, /architect, /implement, /test, /reflect, /review, /commit, /wrapup, /proceed, /status, /bugfix, and /context/init. They are to be surfaced as slash commands, recipes, or prompt patterns wherever possible.
+
+### Workflow Invocation
+
+- Users may invoke workflows by slash command (e.g., /spec, /review) or by natural prompt (e.g., "Let's build a new feature: ...").
+- Agents should route these requests to the appropriate skill or workflow as described in the canonical doc.
+- For discoverability, agents should expose a /workflows or /commands endpoint or help command listing all available workflows.
+
+### Agent Implementation
+
+- All new agent .md files must reference this section for workflow conventions.
 
 ## Scope & precedence
 
@@ -65,28 +81,34 @@ Every project/repo should maintain its own `docs/` folder as a local, personal l
 This central config repo (`agent-configurations`) maintains its own `docs/` only for sessions that work on the config repo itself. Do not log sessions from other projects here.
 
 ### Setting up `docs/` in a new project
+
 If a project doesn't have a `docs/` folder yet, create one using the structure defined in this repo:
+
 - Copy `docs/sessions/_template.md` as a starting point for session summaries
 - Create `docs/issues-resolutions.md` for the issues log
 - Add `docs/` to `.gitignore`
 
 ### At the start of every session
+
 1. Read `docs/sessions/_template.md` to understand the session summary format.
 2. Read `docs/issues-resolutions.md` for known problems and how they were handled.
 3. Scan recent files in `docs/sessions/` for relevant prior context.
 
 ### At the end of every session
+
 1. Append any new issues and their resolutions to `docs/issues-resolutions.md`.
 2. Write a session summary to `docs/sessions/YYYY-MM-DD-{agent}.md` (e.g. `2026-03-17-claude.md`). If a file for that date and agent already exists, append to it rather than overwrite.
 3. Follow the required session summary structure in `docs/sessions/_template.md`.
 
 ### What belongs in `docs/`
+
 - Decisions made and their rationale
 - Non-obvious issues encountered and how they were resolved
 - Patterns observed across the codebase worth remembering
 - Open items or follow-ups for future sessions
 
 ### What does NOT belong in `docs/`
+
 - Code or configuration (those live in the codebase)
 - Things already obvious from reading the source
 - Ephemeral debugging notes with no lasting value

@@ -9,44 +9,18 @@
       "template": "Summarize my OpenCode / Zen usage from this output:\n\n!`python -m opencode_usage run`"
     }
   },
-  "mcp": {
+    "mcp": {
   "ryan-mcp": {
-    "oauth": false,
     "type": "remote",
-    "timeout": 120000,
     "url": "http://localhost:8787/mcp",
-    "enabled": true
-  },
-  "chrome-devtools": {
-    "type": "command",
-    "command": "npx",
-    "args": [
-      "-y",
-      "chrome-devtools-mcp@latest"
-    ],
-    "enabled": true
-  },
-  "aspire": {
-    "type": "command",
-    "command": "aspire",
-    "args": [
-      "agent",
-      "mcp"
-    ],
-    "enabled": true
-  },
-  "playwright": {
-    "type": "command",
-    "command": "npx",
-    "args": [
-      "@playwright/mcp@latest"
-    ],
+    "oauth": false,
+    "timeout": 120000,
     "enabled": true
   },
   "filesystem": {
-    "type": "command",
-    "command": "npx",
-    "args": [
+    "type": "local",
+    "command": [
+      "npx",
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."

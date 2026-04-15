@@ -9,11 +9,14 @@
 #   .\sync-and-deploy.ps1           # generate + deploy
 #   .\sync-and-deploy.ps1 -GenerateOnly  # generate without deploying
 #   .\sync-and-deploy.ps1 -DeployOnly    # deploy without regenerating
+#   .\sync-and-deploy.ps1 -McpProfile full  # include all MCP servers
 
 param(
     [switch]$GenerateOnly,
     [switch]$DeployOnly,
-    [switch]$Force
+    [switch]$Force,
+    [ValidateSet("lean", "full")]
+    [string]$McpProfile = "lean"
 )
 
 $ErrorActionPreference = "Stop"
@@ -112,8 +115,22 @@ function New-Junction {
 #   2. Add a New-FileSymlink or New-Junction call in Invoke-Deploy targeting the tool's global config path
 #   3. Run: .\sync-and-deploy.ps1 -GenerateOnly   to test, then without flag to deploy
 
+function Get-McpProfileServers {
+    param([string]$Profile)
+
+    switch ($Profile) {
+        # Lean profile keeps high-value, low-noise servers always available.
+        'lean' { return @('ryan-mcp', 'filesystem') }
+        'full' { return $null }
+    }
+}
+
 function Get-McpServerConfigs {
-    param([string]$Format)
+    param(
+        [string]$Format,
+        [ValidateSet("lean", "full")]
+        [string]$Profile = "full"
+    )
 
     $serversContent = Read-SharedBlock "mcp-servers.toml"
     $servers = @{}
@@ -137,6 +154,17 @@ function Get-McpServerConfigs {
         }
     }
 
+    $enabledServers = Get-McpProfileServers -Profile $Profile
+    if ($enabledServers) {
+        $filteredServers = [ordered]@{}
+        foreach ($name in $enabledServers) {
+            if ($servers.ContainsKey($name)) {
+                $filteredServers[$name] = $servers[$name]
+            }
+        }
+        $servers = $filteredServers
+    }
+
     switch ($Format) {
         'cursor' {
             $json = @{ mcpServers = @{} }
@@ -156,13 +184,16 @@ function Get-McpServerConfigs {
             $json = @{}
             foreach ($name in $servers.Keys) {
                 $s = $servers[$name]
-                $entry = @{
-                    type    = if ($s.transport -eq 'http') { 'remote' } else { 'command' }
-                    enabled = $true
+                $entry = @{ enabled = $true }
+                if ($s.transport -eq 'http') {
+                    $entry.type = 'remote'
+                    if ($s.url) { $entry.url = $s.url }
+                } else {
+                    $entry.type = 'local'
+                    $command = @($s.command)
+                    if ($s.args) { $command += $s.args }
+                    $entry.command = $command
                 }
-                if ($s.url) { $entry.url = $s.url }
-                if ($s.command) { $entry.command = $s.command }
-                if ($s.args) { $entry.args = $s.args }
                 if ($s.transport -eq 'http') {
                     $entry.timeout = 120000
                     $entry.oauth = $false
@@ -207,12 +238,17 @@ function Get-McpServerConfigs {
             $serversObj = @{}
             foreach ($name in $servers.Keys) {
                 $s = $servers[$name]
-                $cfg = @{
-                    command = if ($s.transport -eq 'http') { 'curl' } else { $s.command }
-                }
                 if ($s.transport -eq 'http') {
-                    $cfg.args = @($s.url)
-                } elseif ($s.args) {
+                    $cfg = @{
+                        type = 'http'
+                        url  = $s.url
+                    }
+                } else {
+                    $cfg = @{
+                        command = $s.command
+                    }
+                }
+                if ($s.transport -ne 'http' -and $s.args) {
                     $cfg.args = $s.args
                 }
                 $serversObj[$name] = $cfg
@@ -224,6 +260,7 @@ function Get-McpServerConfigs {
 
 function Invoke-Generate {
     Write-Host "`nGenerating tool configs from shared blocks...`n" -ForegroundColor Cyan
+    Write-Host "  MCP profile: $McpProfile" -ForegroundColor DarkGray
 
     # Read shared blocks — add new _shared/*.md files here as needed
     $memory = Read-SharedBlock "memory-bridge-instructions.md"
@@ -349,24 +386,24 @@ When making function calls using tools that accept array or object parameters, e
       "template": "Summarize my OpenCode / Zen usage from this output:\n\n!``python -m opencode_usage run``"
     }
   },
-  "mcp": $(Get-McpServerConfigs -Format 'opencode')
+    "mcp": $(Get-McpServerConfigs -Format 'opencode' -Profile $McpProfile)
 }
 "@
 
     # === Cursor MCP (global ~/.cursor/mcp.json) ===
-    Write-GeneratedFile "cursor\mcp.json" (Get-McpServerConfigs -Format 'cursor')
+    Write-GeneratedFile "cursor\mcp.json" (Get-McpServerConfigs -Format 'cursor' -Profile $McpProfile)
 
     # === Gemini CLI MCP (global ~/.gemini/settings.json) ===
-    Write-GeneratedFile "gemini\settings.json" (Get-McpServerConfigs -Format 'gemini')
+    Write-GeneratedFile "gemini\settings.json" (Get-McpServerConfigs -Format 'gemini' -Profile $McpProfile)
 
     # === Copilot CLI MCP (global ~/.copilot/mcp-config.json) ===
-    Write-GeneratedFile "copilot\mcp-config.json" (Get-McpServerConfigs -Format 'copilot')
+    Write-GeneratedFile "copilot\mcp-config.json" (Get-McpServerConfigs -Format 'copilot' -Profile $McpProfile)
 
     # === Copilot VS Code Extension MCP (global ~/.copilot/.vscode/mcp.json) ===
     Write-GeneratedFile "copilot\.vscode\mcp.json" @"
 {
   "inputs": [],
-  "servers": $(Get-McpServerConfigs -Format 'copilot-vscode')
+    "servers": $(Get-McpServerConfigs -Format 'copilot-vscode' -Profile $McpProfile)
 }
 "@
 
@@ -474,6 +511,7 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Agent Config Sync & Deploy" -ForegroundColor Cyan
 Write-Host "  Repo: $RepoRoot" -ForegroundColor DarkGray
+Write-Host "  MCP Profile: $McpProfile" -ForegroundColor DarkGray
 Write-Host "========================================" -ForegroundColor Cyan
 
 if ($DeployOnly) {

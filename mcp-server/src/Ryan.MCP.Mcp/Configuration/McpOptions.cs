@@ -12,6 +12,16 @@ public class McpOptions
     public List<ExternalMcpConnectorOptions> ExternalConnectors { get; set; } = [];
     public Dictionary<string, string> ExternalConnectorEndpointOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<LlmProviderOptions> LlmProviders { get; set; } = [];
+    public ModelMappingOptions ModelMapping { get; set; } = new();
+}
+
+public class ModelMappingOptions
+{
+    /// <summary>
+    /// Optional default client tool used when resolving model overrides by tool.
+    /// Examples: opencode, copilot, claude, cursor, gemini.
+    /// </summary>
+    public string? ActiveClientTool { get; set; }
 }
 
 /// <summary>

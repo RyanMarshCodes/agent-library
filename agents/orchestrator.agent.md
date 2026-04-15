@@ -2,6 +2,7 @@
 name: "Orchestrator"
 description: "Token-efficient task orchestrator — decomposes requests, routes each subtask to the right specialist agent, parallelizes where possible, and returns aggregated results. Never does specialist work itself."
 model: claude-opus-4-6 # frontier — alt: gpt-5.4, gemini-3.1-pro
+model_by_tool: opencode=claude-opus-4-6, copilot=gpt-5.4, claude=claude-opus-4-6, gemini=gemini-3.1-pro
 scope: "orchestration"
 tags: ["orchestration", "delegation", "routing", "multi-agent", "efficiency", "any-stack"]
 ---

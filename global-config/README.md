@@ -54,6 +54,7 @@ STDIO-based MCP servers (Playwright, Chrome DevTools, Aspire) are configured dir
 ### Prerequisites
 
 **Windows**: Enable Developer Mode for symlinks to work without elevation:
+
 - Settings → System → For Developers → Developer Mode: **On**
 
 ### Commands
@@ -66,12 +67,24 @@ cd global-config
 # Generate only (preview what would change)
 .\sync-and-deploy.ps1 -GenerateOnly
 
+# Generate with full MCP server set (default is lean)
+.\sync-and-deploy.ps1 -GenerateOnly -McpProfile full
+
 # Deploy only (skip regeneration)
 .\sync-and-deploy.ps1 -DeployOnly
 
 # Force overwrite existing files
 .\sync-and-deploy.ps1 -Force
 ```
+
+### MCP Profiles
+
+`sync-and-deploy.ps1` supports MCP profiles to keep tool usage dynamic:
+
+- `lean` (default): includes only `ryan-mcp` and `filesystem`
+- `full`: includes all servers from `_shared/mcp-servers.toml`
+
+Use `-McpProfile full` only when you need browser automation or other non-default MCP capabilities.
 
 ## Adding New Tools
 
@@ -96,6 +109,7 @@ Telemetry from all agents flows to the Aspire dashboard via OpenTelemetry.
 ### Ryan.MCP
 
 Ryan.MCP emits structured logs, traces, and metrics via Serilog + OTEL:
+
 - **Structured logs**: Serilog with scope enrichers (OperationId, ToolName, etc.)
 - **Traces**: ASP.NET Core instrumentation + HTTP client spans
 - **Metrics**: Request counts, durations, custom Ryan.MCP meters
@@ -139,6 +153,7 @@ export OTEL_LOGS_EXPORTER=otlp
 ### Aspire Dashboard
 
 View all telemetry in the Aspire dashboard:
+
 - **Traces**: Distributed request traces across services
 - **Metrics**: Custom meters, request rates, latencies
 - **Logs**: Structured logs with scope-enriched attributes

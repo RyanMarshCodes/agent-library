@@ -8,6 +8,7 @@ public record AgentModelMapping(
     string Tier,
     string PrimaryModel,
     string? PrimaryProvider = null,
+    string? ToolOverridesJson = null,
     string? AltModel1 = null,
     string? AltProvider1 = null,
     string? AltModel2 = null,

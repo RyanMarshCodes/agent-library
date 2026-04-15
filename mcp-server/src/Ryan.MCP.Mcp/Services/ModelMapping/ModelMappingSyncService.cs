@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Ryan.MCP.Mcp.Configuration;
 
 namespace Ryan.MCP.Mcp.Services.ModelMapping;
@@ -6,6 +7,7 @@ namespace Ryan.MCP.Mcp.Services.ModelMapping;
 /// <summary>
 /// Syncs model mappings from agent frontmatter into Postgres.
 /// Parses the format: model: primary-model # tier — alt: alt1, alt2
+/// Optional tool overrides: model_by_tool: opencode=modelA, copilot=modelB
 /// </summary>
 public sealed partial class ModelMappingSyncService(
     AgentIngestionCoordinator agents,
@@ -20,6 +22,12 @@ public sealed partial class ModelMappingSyncService(
         @"^model:\s*(\S+)\s*#\s*(\S+)\s*(?:[—–-]{1,2}\s*alt:\s*(.+))?$",
         RegexOptions.IgnoreCase | RegexOptions.Multiline)]
     private static partial Regex ModelLineRegex();
+
+    // Matches: model_by_tool: tool1=modelA, tool2=modelB
+    [GeneratedRegex(
+        @"^(?:model_by_tool|models_by_tool):\s*(.+)$",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline)]
+    private static partial Regex ModelByToolLineRegex();
 
     // Matches a YAML frontmatter closing delimiter: "---" at the start of a line
     [GeneratedRegex(@"^---\s*$", RegexOptions.Multiline)]
@@ -51,10 +59,13 @@ public sealed partial class ModelMappingSyncService(
             else if (agent.Frontmatter.TryGetValue("model", out var modelVal) && modelVal is string)
             {
                 // Frontmatter has model but we couldn't parse the comment format — use bare value
+                var toolOverrides = ParseModelByToolOverrides(agent.RawContent ?? string.Empty);
+                var toolOverridesJson = toolOverrides.Count > 0 ? JsonSerializer.Serialize(toolOverrides) : null;
                 mappings.Add(new AgentModelMapping(
                     AgentName: agent.Name,
                     Tier: "unknown",
                     PrimaryModel: modelVal.ToString()!.Trim(),
+                    ToolOverridesJson: toolOverridesJson,
                     SyncedFrom: "frontmatter"));
                 parseErrors++;
             }
@@ -127,12 +138,15 @@ public sealed partial class ModelMappingSyncService(
         var primaryProvider = ResolveProvider(primaryModel);
         var altProvider1 = alt1 is not null ? ResolveProvider(alt1) : null;
         var altProvider2 = alt2 is not null ? ResolveProvider(alt2) : null;
+        var toolOverrides = ParseModelByToolOverrides(frontmatterBlock);
+        var toolOverridesJson = toolOverrides.Count > 0 ? JsonSerializer.Serialize(toolOverrides) : null;
 
         return new AgentModelMapping(
             AgentName: agent.Name,
             Tier: tier,
             PrimaryModel: primaryModel,
             PrimaryProvider: primaryProvider,
+            ToolOverridesJson: toolOverridesJson,
             AltModel1: alt1,
             AltProvider1: altProvider1,
             AltModel2: alt2,
@@ -149,6 +163,47 @@ public sealed partial class ModelMappingSyncService(
             .Where(p => p.Enabled)
             .FirstOrDefault(p => p.Models.Contains(modelName, StringComparer.OrdinalIgnoreCase))
             ?.Name;
+    }
+
+    private static Dictionary<string, string> ParseModelByToolOverrides(string frontmatterBlock)
+    {
+        var match = ModelByToolLineRegex().Match(frontmatterBlock);
+        if (!match.Success)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var raw = match.Groups[1].Value.Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var pairs = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var pair in pairs)
+        {
+            var idx = pair.IndexOf('=');
+            if (idx <= 0)
+            {
+                idx = pair.IndexOf(':');
+            }
+
+            if (idx <= 0 || idx >= pair.Length - 1)
+            {
+                continue;
+            }
+
+            var tool = ModelToolOverrideResolver.NormalizeToolName(pair[..idx]);
+            var model = pair[(idx + 1)..].Trim().Trim('"', '\'');
+
+            if (!string.IsNullOrWhiteSpace(tool) && !string.IsNullOrWhiteSpace(model))
+            {
+                result[tool] = model;
+            }
+        }
+
+        return result;
     }
 }
 

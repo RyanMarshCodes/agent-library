@@ -1,5 +1,27 @@
 Follow `AGENTS.md` as the canonical, global standards for this workspace.
 
+
+## Workflow Orchestration
+
+[workflow-orchestrator]
+applyTo: ["*"]
+commands:
+	- /spec
+	- /validate
+	- /architect
+	- /implement
+	- /test
+	- /reflect
+	- /review
+	- /commit
+	- /wrapup
+	- /proceed
+	- /status
+	- /bugfix
+	- /sprint
+	- /context
+	- /init
+
 ## Slash Commands
 
 | Command | Description |

@@ -50,6 +50,7 @@ public sealed class ModelMappingTools(
             mapping.AgentName,
             mapping.Tier,
             primary = new { model = mapping.PrimaryModel, provider = mapping.PrimaryProvider },
+            toolOverrides = ModelToolOverrideResolver.ParseToolOverrides(mapping.ToolOverridesJson),
             alternatives = new[]
             {
                 mapping.AltModel1 is not null ? new { model = mapping.AltModel1, provider = mapping.AltProvider1 } : null,
@@ -87,6 +88,7 @@ public sealed class ModelMappingTools(
                 m.Tier,
                 m.PrimaryModel,
                 m.PrimaryProvider,
+                toolOverrides = ModelToolOverrideResolver.ParseToolOverrides(m.ToolOverridesJson),
                 m.AltModel1,
                 m.AltModel2,
                 m.SyncedFrom,
@@ -169,10 +171,11 @@ public sealed class ModelMappingTools(
     }
 
     [McpServerTool(Name = "recommend_model")]
-    [Description("Recommend the best model for a task or agent. Filters by configured providers. If agent_name is given, returns its mapping directly. If only task is given, finds the best agent first then returns its model.")]
+    [Description("Recommend the best model for a task or agent. Supports per-tool overrides via frontmatter model_by_tool and optional clientTool parameter.")]
     public async Task<string> RecommendModel(
         [Description("Task description (e.g. 'write unit tests for C# service'). Required if agent_name not provided.")] string? task = null,
         [Description("Agent name to look up directly. If provided, task is ignored.")] string? agentName = null,
+        [Description("Optional AI client tool (e.g. 'opencode', 'copilot', 'claude'). If omitted, uses McpOptions.ModelMapping.ActiveClientTool.")] string? clientTool = null,
         CancellationToken ct = default)
     {
         using var scope = logger.BeginScope(new Dictionary<string, object?>
@@ -201,7 +204,7 @@ public sealed class ModelMappingTools(
                 });
             }
 
-            return FormatRecommendation(mapping, agentName.Trim(), null);
+            return FormatRecommendation(mapping, agentName.Trim(), null, clientTool);
         }
 
         // Otherwise, find best agent for the task then look up its model
@@ -230,7 +233,7 @@ public sealed class ModelMappingTools(
             });
         }
 
-        return FormatRecommendation(agentMapping, topAgent.Agent.Name, task);
+        return FormatRecommendation(agentMapping, topAgent.Agent.Name, task, clientTool);
     }
 
     [McpServerTool(Name = "list_llm_providers")]
@@ -261,12 +264,19 @@ public sealed class ModelMappingTools(
         }, JsonOptions);
     }
 
-    private string FormatRecommendation(AgentModelMapping mapping, string agentName, string? task)
+    private string FormatRecommendation(AgentModelMapping mapping, string agentName, string? task, string? clientTool)
     {
+        var effective = ModelToolOverrideResolver.ResolveEffectiveModel(
+            mapping,
+            requestedTool: clientTool,
+            configuredTool: options.ModelMapping.ActiveClientTool);
+
+        var effectiveProvider = ResolveProvider(effective.EffectiveModel);
+
         // Check provider availability for recommendations
         var enabledProviders = options.LlmProviders.Where(p => p.Enabled).ToList();
         var primaryAvailable = enabledProviders.Any(p =>
-            p.Models.Contains(mapping.PrimaryModel, StringComparer.OrdinalIgnoreCase));
+            p.Models.Contains(effective.EffectiveModel, StringComparer.OrdinalIgnoreCase));
         var alt1Available = mapping.AltModel1 is not null && enabledProviders.Any(p =>
             p.Models.Contains(mapping.AltModel1, StringComparer.OrdinalIgnoreCase));
         var alt2Available = mapping.AltModel2 is not null && enabledProviders.Any(p =>
@@ -278,10 +288,12 @@ public sealed class ModelMappingTools(
             agent = agentName,
             recommendation = new
             {
-                model = mapping.PrimaryModel,
+                model = effective.EffectiveModel,
                 mapping.Tier,
-                provider = mapping.PrimaryProvider,
+                provider = effectiveProvider,
                 available = primaryAvailable,
+                overrideApplied = effective.UsedOverride,
+                tool = effective.EffectiveTool,
             },
             alternatives = new[]
             {
@@ -295,6 +307,7 @@ public sealed class ModelMappingTools(
             cost = mapping.CostPer1MIn.HasValue || mapping.CostPer1MOut.HasValue
                 ? new { inputPer1M = mapping.CostPer1MIn, outputPer1M = mapping.CostPer1MOut }
                 : null,
+            toolOverrides = ModelToolOverrideResolver.ParseToolOverrides(mapping.ToolOverridesJson),
             mapping.Notes,
             fetch = $"get_agent(\"{agentName}\")",
         }, JsonOptions);

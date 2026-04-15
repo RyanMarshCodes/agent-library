@@ -1,5 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "commands": {
+    "feature-workflow": {
+      "description": "Run spec-based feature workflow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup"
+    },
+    "proceed": {
+      "description": "Run end-to-end ADLC-compatible pipeline with validation gates"
+    },
+    "status": {
+      "description": "Show workflow status and recommended next command"
+    },
+    "bugfix": {
+      "description": "Run streamlined defect flow: report -> analyze -> fix -> verify"
+    },
+    "wrapup": {
+      "description": "Finalize feature artifacts and capture durable knowledge"
+    }
+  },
   "mcp": {
     "ryan-mcp": {
       "type": "remote",
