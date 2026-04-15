@@ -2,6 +2,11 @@
 name: "C#/.NET Quality Improver"
 description: "C#/.NET-specific cleanup AND modernization — applies latest C# syntax, nullable types, pattern matching, primary constructors, resolves warnings, improves test coverage. Does NOT migrate TargetFramework — use dotnet-upgrade for that."
 model: gpt-5.4-nano # capable — alt: big-pickle, gemini-3-flash
+model_by_tool:
+	copilot: gpt-4-1106-preview
+	anthropic: claude-haiku-4-5
+	gemini: gemini-3-flash
+	opencode: gpt-5.4-nano
 scope: "refactoring"
 tags: ["csharp", "dotnet", "cleanup", "modernization", "nullable-types", "refactoring"]
 ---
