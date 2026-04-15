@@ -88,3 +88,59 @@ cd global-config
 - **File symlinks** require Developer Mode or administrator privileges
 - Configs are regenerated from shared blocks on every run
 - Direct edits to tool config folders work (changes sync to repo automatically)
+
+## Observability (OTEL → Aspire)
+
+Telemetry from all agents flows to the Aspire dashboard via OpenTelemetry.
+
+### Ryan.MCP
+
+Ryan.MCP emits structured logs, traces, and metrics via Serilog + OTEL:
+- **Structured logs**: Serilog with scope enrichers (OperationId, ToolName, etc.)
+- **Traces**: ASP.NET Core instrumentation + HTTP client spans
+- **Metrics**: Request counts, durations, custom Ryan.MCP meters
+- **Export**: gRPC OTLP to `OTEL_EXPORTER_OTLP_ENDPOINT` (default: `http://localhost:4317`)
+
+**Note**: Check your Aspire dashboard Settings → Telemetry for the actual OTEL collector endpoint.
+
+### Agent Tools (ILogger Scopes)
+
+All MCP tools in Ryan.MCP use structured logging with scope enrichment:
+
+```csharp
+using var scope = _logger.BeginScope(new Dictionary<string, object>
+{
+    ["ToolName"] = "memory_recall",
+    ["Query"] = query,
+    ["MaxResults"] = maxResults
+});
+
+_logger.LogInformation("Starting memory recall");
+```
+
+This automatically attaches `ToolName`, `Query`, `MaxResults` to all logs within the scope.
+
+### Other Agents (Claude Code, OpenCode, etc.)
+
+Set OTEL env vars to export to Aspire dashboard:
+
+```bash
+# Add to ~/.bashrc, ~/.zshrc, or your shell profile
+source ~/path/to/global-config/_shared/observability-env.sh
+
+# Or manually:
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+export OTEL_METRICS_EXPORTER=otlp
+export OTEL_LOGS_EXPORTER=otlp
+```
+
+### Aspire Dashboard
+
+View all telemetry in the Aspire dashboard:
+- **Traces**: Distributed request traces across services
+- **Metrics**: Custom meters, request rates, latencies
+- **Logs**: Structured logs with scope-enriched attributes
+
+Start Aspire: `cd mcp-server && dotnet run --project src/Ryan.MCP.AppHost`

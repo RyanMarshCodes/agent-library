@@ -1,8 +1,5 @@
 {
   "mcpServers": {
-    "ryan-mcp": {
-      "httpUrl": "http://localhost:8787/mcp"
-    },
     "filesystem": {
       "args": [
         "-y",
@@ -11,9 +8,13 @@
       ],
       "command": "npx"
     },
-    "playwright": {
+    "ryan-mcp": {
+      "httpUrl": "http://localhost:8787/mcp"
+    },
+    "chrome-devtools": {
       "args": [
-        "@playwright/mcp@latest"
+        "-y",
+        "chrome-devtools-mcp@latest"
       ],
       "command": "npx"
     },
@@ -24,10 +25,9 @@
       ],
       "command": "aspire"
     },
-    "chrome-devtools": {
+    "playwright": {
       "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
+        "@playwright/mcp@latest"
       ],
       "command": "npx"
     }

@@ -10,47 +10,47 @@
     }
   },
   "mcp": {
-  "ryan-mcp": {
-    "enabled": true,
-    "timeout": 120000,
-    "oauth": false,
-    "type": "remote",
-    "url": "http://localhost:8787/mcp"
-  },
   "filesystem": {
-    "enabled": true,
+    "type": "command",
     "args": [
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."
     ],
-    "type": "command",
+    "enabled": true,
     "command": "npx"
   },
-  "playwright": {
+  "ryan-mcp": {
+    "url": "http://localhost:8787/mcp",
+    "type": "remote",
     "enabled": true,
-    "args": [
-      "@playwright/mcp@latest"
-    ],
-    "type": "command",
-    "command": "npx"
-  },
-  "aspire": {
-    "enabled": true,
-    "args": [
-      "agent",
-      "mcp"
-    ],
-    "type": "command",
-    "command": "aspire"
+    "oauth": false,
+    "timeout": 120000
   },
   "chrome-devtools": {
-    "enabled": true,
+    "type": "command",
     "args": [
       "-y",
       "chrome-devtools-mcp@latest"
     ],
+    "enabled": true,
+    "command": "npx"
+  },
+  "aspire": {
     "type": "command",
+    "args": [
+      "agent",
+      "mcp"
+    ],
+    "enabled": true,
+    "command": "aspire"
+  },
+  "playwright": {
+    "type": "command",
+    "args": [
+      "@playwright/mcp@latest"
+    ],
+    "enabled": true,
     "command": "npx"
   }
 }

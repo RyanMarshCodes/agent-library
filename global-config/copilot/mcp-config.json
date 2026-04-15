@@ -1,52 +1,52 @@
 {
   "mcpServers": {
-    "ryan-mcp": {
-      "url": "http://localhost:8787/mcp",
-      "type": "http"
-    },
     "filesystem": {
-      "command": "npx",
-      "tools": [
-        "*"
-      ],
       "type": "local",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
-      ]
-    },
-    "playwright": {
-      "command": "npx",
+      ],
       "tools": [
         "*"
       ],
-      "type": "local",
-      "args": [
-        "@playwright/mcp@latest"
-      ]
+      "command": "npx"
     },
-    "aspire": {
-      "command": "aspire",
-      "tools": [
-        "*"
-      ],
-      "type": "local",
-      "args": [
-        "agent",
-        "mcp"
-      ]
+    "ryan-mcp": {
+      "type": "http",
+      "url": "http://localhost:8787/mcp"
     },
     "chrome-devtools": {
-      "command": "npx",
-      "tools": [
-        "*"
-      ],
       "type": "local",
       "args": [
         "-y",
         "chrome-devtools-mcp@latest"
-      ]
+      ],
+      "tools": [
+        "*"
+      ],
+      "command": "npx"
+    },
+    "aspire": {
+      "type": "local",
+      "args": [
+        "agent",
+        "mcp"
+      ],
+      "tools": [
+        "*"
+      ],
+      "command": "aspire"
+    },
+    "playwright": {
+      "type": "local",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "tools": [
+        "*"
+      ],
+      "command": "npx"
     }
   }
 }

@@ -1,13 +1,54 @@
 using System.Reflection;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Ryan.MCP.Mcp.Configuration;
 using Ryan.MCP.Mcp.Services;
 using Ryan.MCP.Mcp.Services.Memory;
 using Ryan.MCP.Mcp.Services.ModelMapping;
 using Ryan.MCP.Mcp.Storage;
+using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var serviceName = builder.Configuration["McpOptions:Knowledge:ProjectSlug"] ?? "Ryan.MCP";
+var serviceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", serviceName)
+    .Enrich.WithProperty("ServiceVersion", serviceVersion)
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .WriteTo.Console()
+    .WriteTo.OpenTelemetry(options =>
+    {
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+            ?? builder.Configuration["Otlp:Endpoint"]
+            ?? "http://localhost:4317";
+        options.Endpoint = otlpEndpoint;
+        options.Protocol = OtlpProtocol.Grpc;
+        options.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = serviceName,
+            ["service.version"] = serviceVersion,
+            ["deployment.environment"] = builder.Environment.EnvironmentName,
+        };
+    })
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddSource("Ryan.MCP"));
 
 // MCP Options
 builder.Services.Configure<McpOptions>(builder.Configuration.GetSection(McpOptions.SectionName));
