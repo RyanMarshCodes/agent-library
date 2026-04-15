@@ -1,20 +1,20 @@
 {
   "mcpServers": {
     "ryan-mcp": {
-      "type": "http",
-      "url": "http://localhost:8787/mcp"
+      "url": "http://localhost:8787/mcp",
+      "type": "http"
     },
     "filesystem": {
-      "type": "local",
       "command": "npx",
-      "tools": [
-        "*"
-      ],
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
-      ]
+      ],
+      "tools": [
+        "*"
+      ],
+      "type": "local"
     }
   }
 }

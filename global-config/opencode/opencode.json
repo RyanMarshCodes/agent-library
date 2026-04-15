@@ -13,9 +13,9 @@
   "ryan-mcp": {
     "enabled": true,
     "oauth": false,
-    "type": "remote",
+    "timeout": 120000,
     "url": "http://localhost:8787/mcp",
-    "timeout": 120000
+    "type": "remote"
   },
   "filesystem": {
     "enabled": true,

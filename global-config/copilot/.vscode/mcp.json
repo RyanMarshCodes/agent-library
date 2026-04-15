@@ -2,16 +2,16 @@
   "inputs": [],
     "servers": {
   "ryan-mcp": {
-    "type": "http",
-    "url": "http://localhost:8787/mcp"
+    "url": "http://localhost:8787/mcp",
+    "type": "http"
   },
   "filesystem": {
+    "command": "npx",
     "args": [
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."
-    ],
-    "command": "npx"
+    ]
   }
 }
 }
