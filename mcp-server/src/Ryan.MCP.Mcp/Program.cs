@@ -179,6 +179,77 @@ app.Lifetime.ApplicationStarted.Register(() =>
 // ─── MCP Protocol endpoint (for IDEs / Claude Code / Cursor / OpenCode) ──────
 app.MapMcp("/mcp");
 
+// ─── MCP client connection logging ─────────────────────────────────────────
+app.Use(async (context, next) =>
+{
+    var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    var userAgent = context.Request.Headers.UserAgent.ToString();
+    var traceId = System.Diagnostics.Activity.Current?.TraceId.ToString() ?? "none";
+
+    if (context.Request.Path.StartsWithSegments("/mcp") && context.Request.ContentType?.Contains("json") == true)
+    {
+        try
+        {
+            context.Request.EnableBuffering();
+            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+            var body = await reader.ReadToEndAsync().ConfigureAwait(false);
+            context.Request.Body.Position = 0;
+
+            if (!string.IsNullOrEmpty(body))
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("method", out var method) && method.GetString() == "initialize")
+                {
+                    var clientInfo = root.TryGetProperty("params", out var p) && p.TryGetProperty("clientInfo", out var ci) ? ci : default;
+                    var clientName = clientInfo.ValueKind != System.Text.Json.JsonValueKind.Undefined && clientInfo.TryGetProperty("name", out var cn) ? cn.GetString() : null;
+                    var clientVersion = clientInfo.ValueKind != System.Text.Json.JsonValueKind.Undefined && clientInfo.TryGetProperty("version", out var cv) ? cv.GetString() : null;
+
+                    app.Logger.LogInformation(
+                        "MCP client connected: ClientIP={ClientIp}, ClientName={ClientName}, ClientVersion={ClientVersion}, UserAgent={UserAgent}, TraceId={TraceId}",
+                        clientIp,
+                        string.IsNullOrEmpty(clientName) ? "unknown" : clientName,
+                        string.IsNullOrEmpty(clientVersion) ? "unknown" : clientVersion,
+                        string.IsNullOrEmpty(userAgent) ? "none" : userAgent,
+                        traceId);
+                }
+                else
+                {
+                    app.Logger.LogInformation(
+                        "MCP request: ClientIP={ClientIp}, UserAgent={UserAgent}, TraceId={TraceId}",
+                        clientIp,
+                        string.IsNullOrEmpty(userAgent) ? "none" : userAgent,
+                        traceId);
+                }
+            }
+            else
+            {
+                app.Logger.LogInformation(
+                    "MCP request: ClientIP={ClientIp}, UserAgent={UserAgent}, TraceId={TraceId}",
+                    clientIp,
+                    string.IsNullOrEmpty(userAgent) ? "none" : userAgent,
+                    traceId);
+            }
+        }
+        catch
+        {
+            app.Logger.LogInformation(
+                "MCP request: ClientIP={ClientIp}, UserAgent={UserAgent}, TraceId={TraceId}",
+                clientIp,
+                string.IsNullOrEmpty(userAgent) ? "none" : userAgent,
+                traceId);
+        }
+    }
+    else
+    {
+        await next().ConfigureAwait(false);
+        return;
+    }
+
+    await next().ConfigureAwait(false);
+});
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.MapGet("/health", () => Results.Ok(new
 {
