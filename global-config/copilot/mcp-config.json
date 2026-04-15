@@ -1,6 +1,43 @@
 {
   "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "type": "local",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "ryan-mcp": {
+      "type": "http",
+      "url": "http://localhost:8787/mcp"
+    },
+    "aspire": {
+      "command": "aspire",
+      "type": "local",
+      "args": [
+        "agent",
+        "mcp"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "type": "local",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
     "filesystem": {
+      "command": "npx",
       "type": "local",
       "args": [
         "-y",
@@ -9,44 +46,7 @@
       ],
       "tools": [
         "*"
-      ],
-      "command": "npx"
-    },
-    "ryan-mcp": {
-      "type": "http",
-      "url": "http://localhost:8787/mcp"
-    },
-    "chrome-devtools": {
-      "type": "local",
-      "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
-      ],
-      "tools": [
-        "*"
-      ],
-      "command": "npx"
-    },
-    "aspire": {
-      "type": "local",
-      "args": [
-        "agent",
-        "mcp"
-      ],
-      "tools": [
-        "*"
-      ],
-      "command": "aspire"
-    },
-    "playwright": {
-      "type": "local",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
-      "tools": [
-        "*"
-      ],
-      "command": "npx"
+      ]
     }
   }
 }

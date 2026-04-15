@@ -1,35 +1,35 @@
 {
   "mcpServers": {
-    "filesystem": {
+    "chrome-devtools": {
+      "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "."
-      ],
-      "command": "npx"
+        "chrome-devtools-mcp@latest"
+      ]
     },
     "ryan-mcp": {
       "httpUrl": "http://localhost:8787/mcp"
     },
-    "chrome-devtools": {
-      "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
-      ],
-      "command": "npx"
-    },
     "aspire": {
+      "command": "aspire",
       "args": [
         "agent",
         "mcp"
-      ],
-      "command": "aspire"
+      ]
     },
     "playwright": {
+      "command": "npx",
       "args": [
         "@playwright/mcp@latest"
-      ],
-      "command": "npx"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
     }
   }
 }
