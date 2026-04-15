@@ -112,6 +112,116 @@ function New-Junction {
 #   2. Add a New-FileSymlink or New-Junction call in Invoke-Deploy targeting the tool's global config path
 #   3. Run: .\sync-and-deploy.ps1 -GenerateOnly   to test, then without flag to deploy
 
+function Get-McpServerConfigs {
+    param([string]$Format)
+
+    $serversContent = Read-SharedBlock "mcp-servers.toml"
+    $servers = @{}
+    $currentSection = $null
+
+    foreach ($line in ($serversContent -split "`n")) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^\[([\w-]+)\]$') {
+            $currentSection = $matches[1].Trim()
+            $servers[$currentSection] = @{}
+        } elseif ($currentSection -and $trimmed -match '^(\w+)\s*=\s*"([^"]+)"$') {
+            $servers[$currentSection][$matches[1]] = $matches[2]
+        } elseif ($currentSection -and $trimmed -match '^args\s*=\s*\[([^\]]+)\]$') {
+            $argsStr = $matches[1]
+            $args = @()
+            $regexMatches = [regex]::Matches($argsStr, '"([^"]+)"')
+            foreach ($m in $regexMatches) {
+                $args += $m.Groups[1].Value
+            }
+            $servers[$currentSection]['args'] = $args
+        }
+    }
+
+    switch ($Format) {
+        'cursor' {
+            $json = @{ mcpServers = @{} }
+            foreach ($name in $servers.Keys) {
+                $s = $servers[$name]
+                if ($s.transport -eq 'http') {
+                    $json.mcpServers[$name] = @{ url = $s.url }
+                } else {
+                    $cfg = @{ command = $s.command }
+                    if ($s.args) { $cfg.args = $s.args }
+                    $json.mcpServers[$name] = $cfg
+                }
+            }
+            return ($json | ConvertTo-Json -Depth 5)
+        }
+        'opencode' {
+            $json = @{}
+            foreach ($name in $servers.Keys) {
+                $s = $servers[$name]
+                $entry = @{
+                    type    = if ($s.transport -eq 'http') { 'remote' } else { 'command' }
+                    enabled = $true
+                }
+                if ($s.url) { $entry.url = $s.url }
+                if ($s.command) { $entry.command = $s.command }
+                if ($s.args) { $entry.args = $s.args }
+                if ($s.transport -eq 'http') {
+                    $entry.timeout = 120000
+                    $entry.oauth = $false
+                }
+                $json[$name] = $entry
+            }
+            return ($json | ConvertTo-Json -Depth 5)
+        }
+        'gemini' {
+            $json = @{ mcpServers = @{} }
+            foreach ($name in $servers.Keys) {
+                $s = $servers[$name]
+                if ($s.transport -eq 'http') {
+                    $json.mcpServers[$name] = @{ httpUrl = $s.url }
+                } else {
+                    $cfg = @{ command = $s.command }
+                    if ($s.args) { $cfg.args = $s.args }
+                    $json.mcpServers[$name] = $cfg
+                }
+            }
+            return ($json | ConvertTo-Json -Depth 5)
+        }
+        'copilot' {
+            $json = @{ mcpServers = @{} }
+            foreach ($name in $servers.Keys) {
+                $s = $servers[$name]
+                if ($s.transport -eq 'http') {
+                    $json.mcpServers[$name] = @{ type = 'http'; url = $s.url }
+                } else {
+                    $cfg = @{
+                        type    = 'local'
+                        command = $s.command
+                        tools   = @('*')
+                    }
+                    if ($s.args) { $cfg.args = $s.args }
+                    $json.mcpServers[$name] = $cfg
+                }
+            }
+            return ($json | ConvertTo-Json -Depth 5)
+        }
+        'copilot-vscode' {
+            $serversObj = @{}
+            foreach ($name in $servers.Keys) {
+                $s = $servers[$name]
+                $cfg = @{
+                    command = if ($s.transport -eq 'http') { 'curl' } else { $s.command }
+                }
+                if ($s.transport -eq 'http') {
+                    $cfg.args = @($s.url)
+                } elseif ($s.args) {
+                    $cfg.args = $s.args
+                }
+                $serversObj[$name] = $cfg
+            }
+            return ($serversObj | ConvertTo-Json -Depth 5)
+        }
+    }
+}
+
 function Invoke-Generate {
     Write-Host "`nGenerating tool configs from shared blocks...`n" -ForegroundColor Cyan
 
@@ -239,15 +349,24 @@ When making function calls using tools that accept array or object parameters, e
       "template": "Summarize my OpenCode / Zen usage from this output:\n\n!``python -m opencode_usage run``"
     }
   },
-  "mcp": {
-    "ryan-mcp": {
-      "type": "remote",
-      "url": "http://localhost:8787/mcp",
-      "enabled": true,
-      "timeout": 120000,
-      "oauth": false
-    }
-  }
+  "mcp": $(Get-McpServerConfigs -Format 'opencode')
+}
+"@
+
+    # === Cursor MCP (global ~/.cursor/mcp.json) ===
+    Write-GeneratedFile "cursor\mcp.json" (Get-McpServerConfigs -Format 'cursor')
+
+    # === Gemini CLI MCP (global ~/.gemini/settings.json) ===
+    Write-GeneratedFile "gemini\settings.json" (Get-McpServerConfigs -Format 'gemini')
+
+    # === Copilot CLI MCP (global ~/.copilot/mcp-config.json) ===
+    Write-GeneratedFile "copilot\mcp-config.json" (Get-McpServerConfigs -Format 'copilot')
+
+    # === Copilot VS Code Extension MCP (global ~/.copilot/.vscode/mcp.json) ===
+    Write-GeneratedFile "copilot\.vscode\mcp.json" @"
+{
+  "inputs": [],
+  "servers": $(Get-McpServerConfigs -Format 'copilot-vscode')
 }
 "@
 
@@ -266,6 +385,12 @@ function Invoke-Deploy {
     New-FileSymlink `
         -Link "$env:USERPROFILE\.claude\CLAUDE.md" `
         -Target (Join-Path $ScriptDir "claude\CLAUDE.md")
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.claude\settings.json" `
+        -Target (Join-Path $ScriptDir "claude\settings.json")
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.claude\mcp.json" `
+        -Target (Join-Path $ScriptDir "claude\mcp.json")
 
     # Gemini CLI
     New-FileSymlink `
@@ -285,13 +410,55 @@ function Invoke-Deploy {
         -Link "$env:USERPROFILE\.github\copilot-instructions.md" `
         -Target (Join-Path $ScriptDir "copilot\github\copilot-instructions.md")
 
+    # Copilot CLI MCP servers config
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.copilot\mcp-config.json" `
+        -Target (Join-Path $ScriptDir "copilot\mcp-config.json")
+
+    # Copilot VS Code Extension MCP servers config
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.copilot\.vscode\mcp.json" `
+        -Target (Join-Path $ScriptDir "copilot\.vscode\mcp.json")
+
+    # VS Code user-level MCP servers (global across all workspaces)
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.vscode\mcp.json" `
+        -Target (Join-Path $ScriptDir "vscode\mcp.json")
+
+    # VS Code / Copilot custom agents (user level)
+    New-Junction `
+        -Link "$env:USERPROFILE\.copilot\agents" `
+        -Target (Join-Path $ScriptDir "vscode\agents")
+
+    # Gemini CLI MCP servers config
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.gemini\settings.json" `
+        -Target (Join-Path $ScriptDir "gemini\settings.json")
+
     # Directory junctions (no elevation needed)
     Write-Host "`n  Directory junctions:" -ForegroundColor White
 
-    # Cursor global rules
+    # Cursor global rules + settings + keybindings
+    # (changes written to ~/.cursor/* go to global-config/cursor/)
     New-Junction `
         -Link "$env:USERPROFILE\.cursor\rules" `
         -Target (Join-Path $ScriptDir "cursor\rules")
+    New-FileSymlink `
+        -Link "$env:APPDATA\Cursor\User\settings.json" `
+        -Target (Join-Path $ScriptDir "cursor\settings.json")
+    New-FileSymlink `
+        -Link "$env:APPDATA\Cursor\User\keybindings.json" `
+        -Target (Join-Path $ScriptDir "cursor\keybindings.json")
+
+    # Cursor MCP servers config
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.cursor\mcp.json" `
+        -Target (Join-Path $ScriptDir "cursor\mcp.json")
+
+    # Copilot CLI config
+    New-FileSymlink `
+        -Link "$env:USERPROFILE\.copilot\config.json" `
+        -Target (Join-Path $ScriptDir "copilot\config.json")
 
     # OpenCode global instructions
     New-Junction `

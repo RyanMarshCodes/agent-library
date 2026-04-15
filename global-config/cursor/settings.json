@@ -1,0 +1,104 @@
+{
+  // —— Editor (language-agnostic) ——
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.rulers": [120],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.minimap.enabled": true,
+  "editor.suggestSelection": "first",
+  "editor.wordWrap": "off",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+  },
+
+  // —— Files ——
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.exclude": {
+    "node_modules/": true,
+    "**/node_modules/": true,
+  },
+
+  // —— .NET / C# ——
+  "[csharp]": {
+    "editor.defaultFormatter": "anysphere.csharp",
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+  },
+  "[cshtml]": {
+    "editor.tabSize": 4,
+  },
+  "dotnet.format.enable": true,
+
+  // —— TypeScript / JavaScript / Angular ——
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+  },
+  "prettier.printWidth": 120,
+  "eslint.validate": ["typescript", "javascript", "react"],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // —— Other common languages (polyglot) ——
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "ms-python.python",
+  },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off",
+    },
+  },
+  "[xml]": {
+    "editor.tabSize": 2,
+  },
+  "[sql]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "ReneSaarsoo.sql-formatter-vsc",
+  },
+  "[shellscript]": {
+    "editor.tabSize": 2,
+  },
+  "git.autofetch": true,
+  "SQL-Formatter-VSCode.keywordCase": "upper",
+  "SQL-Formatter-VSCode.dataTypeCase": "upper",
+}

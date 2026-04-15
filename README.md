@@ -18,6 +18,15 @@ This repository contains standardized rules, conventions, and best practices tha
 ├── .clinerules               # Cline entry point → defers to AGENTS.md
 ├── .github/
 │   └── copilot-instructions.md  # GitHub Copilot entry point → defers to AGENTS.md
+├── global-config/            # Tool configurations (symlinked to user home)
+│   ├── _shared/             # Shared blocks (MCP servers, memory instructions)
+│   ├── claude/               # Claude Code settings + MCP
+│   ├── cursor/               # Cursor settings + keybindings + MCP + rules
+│   ├── gemini/               # Gemini CLI settings + MCP
+│   ├── opencode/             # OpenCode settings + MCP + instructions
+│   ├── copilot/              # Copilot CLI settings + MCP
+│   ├── vscode/               # VS Code settings + MCP
+│   └── sync-and-deploy.ps1   # Symlink deployment script
 ├── knowledge/                # Standards and conventions library
 │   ├── global/               # Language/framework-agnostic cross-cutting standards
 │   │   ├── unit-testing.md
@@ -75,6 +84,13 @@ When working on any project, AI agents should:
 3. Apply language/framework-specific conventions from `knowledge/backend/` or `knowledge/frontend/`
 4. Follow global standards from root `AGENTS.md`
 5. Write a session summary to `docs/sessions/` when the session ends
+
+## Tool Configuration (global-config/)
+
+AI tool configurations are centralized in `global-config/` and symlinked to user home directories. See [`global-config/README.md`](global-config/README.md) for details on:
+- Symlink architecture
+- MCP server configuration
+- Deployment and sync workflow
 
 ## Operational Preflight
 

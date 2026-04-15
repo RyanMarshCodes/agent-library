@@ -1,0 +1,4 @@
+#!/bin/sh
+# Post-commit hook: echo confirmation
+
+echo "Global-config symlinks synced."

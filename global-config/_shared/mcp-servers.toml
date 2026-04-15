@@ -1,0 +1,31 @@
+# MCP Server Definitions
+# Centralized source of truth — sync-and-deploy.ps1 generates tool-specific configs.
+#
+# Format: serverName = { transport = "http"|"stdio", url?, command?, args?, env? }
+#
+# - http: Remote SSE/HTTP server (url required)
+# - stdio: Local process via command + args
+
+[ryan-mcp]
+transport = "http"
+url = "http://localhost:8787/mcp"
+
+[aspire]
+transport = "stdio"
+command = "aspire"
+args = ["agent", "mcp"]
+
+[chrome-devtools]
+transport = "stdio"
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest"]
+
+[playwright]
+transport = "stdio"
+command = "npx"
+args = ["@playwright/mcp@latest"]
+
+[filesystem]
+transport = "stdio"
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "."]

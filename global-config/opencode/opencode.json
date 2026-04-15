@@ -10,12 +10,48 @@
     }
   },
   "mcp": {
-    "ryan-mcp": {
-      "type": "remote",
-      "url": "http://localhost:8787/mcp",
-      "enabled": true,
-      "timeout": 120000,
-      "oauth": false
-    }
+  "filesystem": {
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "."
+    ],
+    "type": "command",
+    "enabled": true,
+    "command": "npx"
+  },
+  "chrome-devtools": {
+    "args": [
+      "-y",
+      "chrome-devtools-mcp@latest"
+    ],
+    "type": "command",
+    "enabled": true,
+    "command": "npx"
+  },
+  "playwright": {
+    "args": [
+      "@playwright/mcp@latest"
+    ],
+    "type": "command",
+    "enabled": true,
+    "command": "npx"
+  },
+  "aspire": {
+    "args": [
+      "agent",
+      "mcp"
+    ],
+    "type": "command",
+    "enabled": true,
+    "command": "aspire"
+  },
+  "ryan-mcp": {
+    "oauth": false,
+    "timeout": 120000,
+    "type": "remote",
+    "enabled": true,
+    "url": "http://localhost:8787/mcp"
   }
+}
 }

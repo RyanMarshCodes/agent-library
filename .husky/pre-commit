@@ -1,0 +1,4 @@
+#!/bin/sh
+# Pre-commit hook: sync global-config symlinks before commits
+
+cd global-config && pwsh -File sync-and-deploy.ps1
