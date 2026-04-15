@@ -7,6 +7,9 @@ All Claude agents must support the baseline workflows defined in:
 
  mcp-server/knowledgebase/WORKFLOW_COMMANDS.md
 
+
+## Karpathy-Inspired Behavioral Guidelines
+See [knowledge/global/karpathy-guidelines.md](knowledge/global/karpathy-guidelines.md) for the canonical guidelines. These apply to all Claude agents and should be merged with project-specific instructions.
 These workflows include /spec, /validate, /architect, /implement, /test, /reflect, /review, /commit, and /context/init. Surface these as slash commands, recipes, or prompt patterns wherever possible. See AGENTS.md for invocation and implementation details.
 
 ## Slash Commands

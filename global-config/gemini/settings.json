@@ -4,12 +4,12 @@
       "httpUrl": "http://localhost:8787/mcp"
     },
     "filesystem": {
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
-      ]
+      ],
+      "command": "npx"
     }
   }
 }

@@ -6,6 +6,8 @@ Use the ADLC-compatible workflow conventions in:
 
 	mcp-server/knowledgebase/WORKFLOW_COMMANDS.md
 
+## Karpathy-Inspired Behavioral Guidelines
+See [knowledge/global/karpathy-guidelines.md](knowledge/global/karpathy-guidelines.md) for the canonical guidelines. These apply to all Gemini sessions and should be merged with project-specific instructions.
 Primary feature pipeline:
 
 	/context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup

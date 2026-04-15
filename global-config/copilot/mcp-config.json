@@ -6,10 +6,10 @@
     },
     "filesystem": {
       "type": "local",
+      "command": "npx",
       "tools": [
         "*"
       ],
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",

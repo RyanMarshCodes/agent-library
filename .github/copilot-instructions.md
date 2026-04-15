@@ -6,6 +6,8 @@ All Copilot sessions should use the workflow conventions in:
 
 	mcp-server/knowledgebase/WORKFLOW_COMMANDS.md
 
+## Karpathy-Inspired Behavioral Guidelines
+See [knowledge/global/karpathy-guidelines.md](knowledge/global/karpathy-guidelines.md) for the canonical guidelines. These apply to all Copilot sessions and should be merged with project-specific instructions.
 For new feature development, prefer the ADLC-compatible spec-based flow:
 
 	/context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup

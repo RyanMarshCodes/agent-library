@@ -11,21 +11,21 @@
   },
     "mcp": {
   "ryan-mcp": {
+    "enabled": true,
+    "oauth": false,
     "type": "remote",
     "url": "http://localhost:8787/mcp",
-    "oauth": false,
-    "timeout": 120000,
-    "enabled": true
+    "timeout": 120000
   },
   "filesystem": {
-    "type": "local",
+    "enabled": true,
     "command": [
       "npx",
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."
     ],
-    "enabled": true
+    "type": "local"
   }
 }
 }
