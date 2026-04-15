@@ -5,16 +5,16 @@
       "type": "http"
     },
     "filesystem": {
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
       ],
+      "type": "local",
       "tools": [
         "*"
       ],
-      "type": "local"
+      "command": "npx"
     }
   }
 }

@@ -1,10 +1,32 @@
 # Global Instructions (Claude Code)
 
+## Karpathy-Inspired Behavioral Guidelines
+
+Apply these on every task:
+
+- Think before coding: state assumptions, surface ambiguity, and ask when unclear.
+- Simplicity first: implement the minimum that solves the request.
+- Surgical changes: touch only files and lines required for the task.
+- Goal-driven execution: define verifiable success criteria and confirm results.
+
+## Canonical AI/Agent Workflows
+
+All Claude agents should support the baseline workflows defined in:
+
+ mcp-server/knowledgebase/WORKFLOW_COMMANDS.md
+
+These workflows include /spec, /validate, /architect, /implement, /test, /reflect, /review, /commit, /wrapup, /proceed, /status, /bugfix, and /context/init. Surface these as slash commands, recipes, or prompt patterns wherever possible.
+
 ## Slash Commands
 
 | Command | Description |
 |---------|-------------|
 | `/dotnet-pr` | Generate PR description: 5-bullet summary, risks + rollback, paste-ready description, reviewer focus |
+| `/feature-workflow` | Run spec-based feature delivery flow (/context -> /spec -> /validate -> /architect -> /implement -> /test -> /reflect -> /review -> /commit) |
+| `/proceed` | Run end-to-end ADLC-compatible pipeline with validation gates |
+| `/wrapup` | Finalize feature artifacts and capture durable knowledge |
+| `/status` | Show current workflow phase and recommended next command |
+| `/bugfix` | Run streamlined bug workflow (report -> analyze -> fix -> verify) |
 
 # Ryan.MCP Knowledge-Graph Memory
 

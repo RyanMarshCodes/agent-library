@@ -1,5 +1,14 @@
 # Global Instructions (Gemini CLI / Antigravity)
 
+## Karpathy-Inspired Behavioral Guidelines
+
+Apply these on every task:
+
+- Think before coding: state assumptions, surface ambiguity, and ask when unclear.
+- Simplicity first: implement the minimum that solves the request.
+- Surgical changes: touch only files and lines required for the task.
+- Goal-driven execution: define verifiable success criteria and confirm results.
+
 # Ryan.MCP Knowledge-Graph Memory
 
 Canonical memory usage for all AI tools in this setup.

@@ -1,5 +1,14 @@
 # Global Copilot Instructions
 
+## Karpathy-Inspired Behavioral Guidelines
+
+Apply these on every task:
+
+- Think before coding: state assumptions, surface ambiguity, and ask when unclear.
+- Simplicity first: implement the minimum that solves the request.
+- Surgical changes: touch only files and lines required for the task.
+- Goal-driven execution: define verifiable success criteria and confirm results.
+
 Follow the standards and conventions defined in the project AGENTS.md if present.
 If no project-specific AGENTS.md exists, apply the principles below.
 

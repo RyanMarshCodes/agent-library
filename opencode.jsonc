@@ -1,20 +1,25 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "commands": {
+  "command": {
     "feature-workflow": {
-      "description": "Run spec-based feature workflow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup"
+      "description": "Run spec-based feature workflow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup",
+      "template": "Run /feature-workflow for this target:\n\n{{args}}\n\nIf no target is provided, ask for the feature scope first. Follow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup."
     },
     "proceed": {
-      "description": "Run end-to-end ADLC-compatible pipeline with validation gates"
+      "description": "Run end-to-end ADLC-compatible pipeline with validation gates",
+      "template": "Run /proceed for this target:\n\n{{args}}\n\nExecute the end-to-end ADLC-compatible workflow with validation gates between phases."
     },
     "status": {
-      "description": "Show workflow status and recommended next command"
+      "description": "Show workflow status and recommended next command",
+      "template": "Run /status for this target:\n\n{{args}}\n\nShow current workflow phase, completed steps, blockers, and the next recommended command."
     },
     "bugfix": {
-      "description": "Run streamlined defect flow: report -> analyze -> fix -> verify"
+      "description": "Run streamlined defect flow: report -> analyze -> fix -> verify",
+      "template": "Run /bugfix for this issue:\n\n{{args}}\n\nUse the streamlined bug flow: report -> analyze -> fix -> verify."
     },
     "wrapup": {
-      "description": "Finalize feature artifacts and capture durable knowledge"
+      "description": "Finalize feature artifacts and capture durable knowledge",
+      "template": "Run /wrapup for this completed work:\n\n{{args}}\n\nFinalize artifacts and capture durable knowledge: lessons learned, validated assumptions, and follow-ups."
     }
   },
   "mcp": {

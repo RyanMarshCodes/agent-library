@@ -4,6 +4,26 @@
     "~/.config/opencode/instructions/ryan-mcp-memory.md"
   ],
   "command": {
+    "feature-workflow": {
+      "description": "Run spec-based feature workflow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup",
+      "template": "Run /feature-workflow for this target:\n\n{{args}}\n\nIf no target is provided, ask for the feature scope first. Follow: /context -> /spec -> /validate -> /architect -> /validate -> /implement -> /test -> /reflect -> /review -> /commit -> /wrapup."
+    },
+    "proceed": {
+      "description": "Run end-to-end ADLC-compatible pipeline with validation gates",
+      "template": "Run /proceed for this target:\n\n{{args}}\n\nExecute the end-to-end ADLC-compatible workflow with validation gates between phases."
+    },
+    "status": {
+      "description": "Show workflow status and recommended next command",
+      "template": "Run /status for this target:\n\n{{args}}\n\nShow current workflow phase, completed steps, blockers, and the next recommended command."
+    },
+    "bugfix": {
+      "description": "Run streamlined defect flow: report -> analyze -> fix -> verify",
+      "template": "Run /bugfix for this issue:\n\n{{args}}\n\nUse the streamlined bug flow: report -> analyze -> fix -> verify."
+    },
+    "wrapup": {
+      "description": "Finalize feature artifacts and capture durable knowledge",
+      "template": "Run /wrapup for this completed work:\n\n{{args}}\n\nFinalize artifacts and capture durable knowledge: lessons learned, validated assumptions, and follow-ups."
+    },
     "quota": {
       "description": "Check OpenCode usage quota (opencode_usage CLI)",
       "template": "Summarize my OpenCode / Zen usage from this output:\n\n!`python -m opencode_usage run`"
@@ -11,21 +31,21 @@
   },
     "mcp": {
   "ryan-mcp": {
-    "enabled": true,
-    "oauth": false,
-    "timeout": 120000,
     "url": "http://localhost:8787/mcp",
-    "type": "remote"
+    "type": "remote",
+    "timeout": 120000,
+    "oauth": false,
+    "enabled": true
   },
   "filesystem": {
-    "enabled": true,
+    "type": "local",
     "command": [
       "npx",
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."
     ],
-    "type": "local"
+    "enabled": true
   }
 }
 }
