@@ -10,48 +10,48 @@
     }
   },
   "mcp": {
+  "ryan-mcp": {
+    "enabled": true,
+    "timeout": 120000,
+    "oauth": false,
+    "type": "remote",
+    "url": "http://localhost:8787/mcp"
+  },
   "filesystem": {
+    "enabled": true,
     "args": [
       "-y",
       "@modelcontextprotocol/server-filesystem",
       "."
     ],
     "type": "command",
-    "enabled": true,
-    "command": "npx"
-  },
-  "chrome-devtools": {
-    "args": [
-      "-y",
-      "chrome-devtools-mcp@latest"
-    ],
-    "type": "command",
-    "enabled": true,
     "command": "npx"
   },
   "playwright": {
+    "enabled": true,
     "args": [
       "@playwright/mcp@latest"
     ],
     "type": "command",
-    "enabled": true,
     "command": "npx"
   },
   "aspire": {
+    "enabled": true,
     "args": [
       "agent",
       "mcp"
     ],
     "type": "command",
-    "enabled": true,
     "command": "aspire"
   },
-  "ryan-mcp": {
-    "oauth": false,
-    "timeout": 120000,
-    "type": "remote",
+  "chrome-devtools": {
     "enabled": true,
-    "url": "http://localhost:8787/mcp"
+    "args": [
+      "-y",
+      "chrome-devtools-mcp@latest"
+    ],
+    "type": "command",
+    "command": "npx"
   }
 }
 }
