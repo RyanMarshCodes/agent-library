@@ -1,4 +1,37 @@
 #!/bin/sh
 # Pre-commit hook: sync global-config symlinks before commits
 
+echo "Syncing global-config symlinks..."
 cd global-config && pwsh -File sync-and-deploy.ps1
+
+# Verify key symlinks exist
+echo "Verifying symlinks..."
+pwsh -Command "
+\$links = @(
+  \"\$env:USERPROFILE\.claude\CLAUDE.md\",
+  \"\$env:USERPROFILE\.cursor\mcp.json\",
+  \"\$env:USERPROFILE\.gemini\settings.json\",
+  \"\$env:USERPROFILE\.copilot\mcp-config.json\",
+  \"\$env:USERPROFILE\.vscode\mcp.json\"
+)
+\$failed = \$false
+foreach (\$link in \$links) {
+  if (Test-Path \$link) {
+    \$item = Get-Item \$link -Force
+    if (\$item.LinkType -eq 'SymbolicLink' -or \$item.Attributes -band 1024) {
+      Write-Host \"[OK] \$link\" -ForegroundColor Green
+    } else {
+      Write-Host \"[FAIL] \$link is not a symlink\" -ForegroundColor Red
+      \$failed = \$true
+    }
+  } else {
+    Write-Host \"[FAIL] \$link not found\" -ForegroundColor Red
+    \$failed = \$true
+  }
+}
+if (\$failed) {
+  Write-Host \"Symlink verification failed!\" -ForegroundColor Red
+  exit 1
+}
+Write-Host \"All symlinks verified.\" -ForegroundColor Green
+"
