@@ -7,7 +7,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed partial class LogForensicsTools
+public sealed partial class LogForensicsTools(ILogger<LogForensicsTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
     private static readonly string[] ErrorTokens =
@@ -31,6 +31,14 @@ public sealed partial class LogForensicsTools
         [Description("Absolute or relative path to a log file.")] string path,
         [Description("Optional limit for lines read from file tail. Default 4000, max 20000.")] int maxLines = 4000)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "LogForensicsTools.AnalyzeRuntimeLogs",
+            ["Path"] = path,
+            ["MaxLines"] = maxLines,
+        });
+        logger.LogDebug("AnalyzeRuntimeLogs invoked");
+
         if (string.IsNullOrWhiteSpace(path))
         {
             return Error("invalid_request", "path is required");
@@ -85,6 +93,14 @@ public sealed partial class LogForensicsTools
         [Description("Absolute or relative path to a log file.")] string path,
         [Description("Grouping mode: signature or level.")] string groupBy = "signature")
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "LogForensicsTools.SummarizeErrors",
+            ["Path"] = path,
+            ["GroupBy"] = groupBy,
+        });
+        logger.LogDebug("SummarizeErrors invoked");
+
         if (string.IsNullOrWhiteSpace(path))
         {
             return Error("invalid_request", "path is required");
@@ -133,6 +149,16 @@ public sealed partial class LogForensicsTools
         [Description("UTC ISO8601 end, e.g. 2026-03-31T06:00:00Z")] string end,
         [Description("Maximum timeline events to return.")] int maxEvents = 200)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "LogForensicsTools.IncidentTimeline",
+            ["Path"] = path,
+            ["Start"] = start,
+            ["End"] = end,
+            ["MaxEvents"] = maxEvents,
+        });
+        logger.LogDebug("IncidentTimeline invoked");
+
         if (!DateTimeOffset.TryParse(start, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var startUtc) ||
             !DateTimeOffset.TryParse(end, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var endUtc))
         {

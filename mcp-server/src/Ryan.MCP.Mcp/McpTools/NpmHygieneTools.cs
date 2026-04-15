@@ -6,7 +6,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class NpmHygieneTools
+public sealed class NpmHygieneTools(ILogger<NpmHygieneTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -22,46 +22,48 @@ public sealed class NpmHygieneTools
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
         var result = new HygieneResult();
 
-        try
+        using (logger.BeginScope(new Dictionary<string, object?> { ["ToolName"] = "NpmHygieneTools.NpmHygiene", ["WorkingDirectory"] = workDir }))
         {
-            var pm = DetectPackageManager(workDir);
-            result.PackageManager = pm.Name;
+            logger.LogDebug("NpmHygiene invoked for workDir={WorkDir}", workDir);
 
-            if (!File.Exists(Path.Combine(workDir, "package.json")))
+            try
             {
-                result.Error = "No package.json found in working directory";
-                return JsonSerializer.Serialize(result, JsonOptions);
+                var pm = DetectPackageManager(workDir);
+                result.PackageManager = pm.Name;
+
+                if (!File.Exists(Path.Combine(workDir, "package.json")))
+                {
+                    result.Error = "No package.json found in working directory";
+                    return JsonSerializer.Serialize(result, JsonOptions);
+                }
+
+                var (auditSuccess, auditOutput, auditError) =
+                    await RunCommandAsync(workDir, pm.Command, pm.AuditArgs, cancellationToken);
+                result.Vulnerabilities = ParseAuditOutput(auditOutput + "\n" + auditError, pm.Name);
+                result.HasVulnerabilities = result.Vulnerabilities.Count > 0 || !auditSuccess;
+
+                if (!auditSuccess && result.Vulnerabilities.Count == 0)
+                {
+                    result.AuditSummary = Truncate(auditOutput + "\n" + auditError, 3000);
+                }
+
+                if (!vulnerabilitiesOnly)
+                {
+                    var (_, outdatedOutput, outdatedError) =
+                        await RunCommandAsync(workDir, pm.Command, pm.OutdatedArgs, cancellationToken);
+                    result.OutdatedPackages = ParseOutdatedOutput(outdatedOutput, pm.Name);
+                    result.HasOutdated = result.OutdatedPackages.Count > 0;
+                }
+
+                result.Recommendations = GenerateRecommendations(result);
+            }
+            catch (Exception ex)
+            {
+                result.Error = ex.Message;
             }
 
-            // Audit (vulnerabilities)
-            var (auditSuccess, auditOutput, auditError) =
-                await RunCommandAsync(workDir, pm.Command, pm.AuditArgs, cancellationToken);
-            result.Vulnerabilities = ParseAuditOutput(auditOutput + "\n" + auditError, pm.Name);
-            result.HasVulnerabilities = result.Vulnerabilities.Count > 0 || !auditSuccess;
-
-            if (!auditSuccess && result.Vulnerabilities.Count == 0)
-            {
-                // npm audit exits non-zero when vulns found; capture raw summary
-                result.AuditSummary = Truncate(auditOutput + "\n" + auditError, 3000);
-            }
-
-            // Outdated
-            if (!vulnerabilitiesOnly)
-            {
-                var (_, outdatedOutput, outdatedError) =
-                    await RunCommandAsync(workDir, pm.Command, pm.OutdatedArgs, cancellationToken);
-                result.OutdatedPackages = ParseOutdatedOutput(outdatedOutput, pm.Name);
-                result.HasOutdated = result.OutdatedPackages.Count > 0;
-            }
-
-            result.Recommendations = GenerateRecommendations(result);
+            return JsonSerializer.Serialize(result, JsonOptions);
         }
-        catch (Exception ex)
-        {
-            result.Error = ex.Message;
-        }
-
-        return JsonSerializer.Serialize(result, JsonOptions);
     }
 
     // ── Package manager detection ──────────────────────────────────────

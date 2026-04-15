@@ -23,6 +23,14 @@ public sealed class SpecTools(DocumentIngestionCoordinator documents, ILogger<Sp
         [Description("Relative path to the spec file, e.g. 'my-api/openapi.json' or 'petstore.yaml'")] string path,
         CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "SpecTools.ParseOpenApi",
+            ["Tier"] = tier,
+            ["Path"] = path,
+        });
+        logger.LogDebug("ParseOpenApi invoked");
+
         var entry = documents.Snapshot.Documents.FirstOrDefault(d =>
             d.Tier.Equals(tier, StringComparison.OrdinalIgnoreCase) &&
             d.RelativePath.Equals(path.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase));

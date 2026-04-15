@@ -12,7 +12,8 @@ public sealed class ModelMappingTools(
     IModelMappingStore store,
     ModelMappingSyncService syncService,
     AgentIngestionCoordinator agents,
-    McpOptions options)
+    McpOptions options,
+    ILogger<ModelMappingTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -22,6 +23,13 @@ public sealed class ModelMappingTools(
         [Description("Agent name exactly as indexed (e.g. 'test-writer', 'orchestrator')")] string agentName,
         CancellationToken ct)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.GetModelMapping",
+            ["AgentName"] = agentName,
+        });
+        logger.LogDebug("GetModelMapping invoked");
+
         if (string.IsNullOrWhiteSpace(agentName))
         {
             return JsonSerializer.Serialize(new { error = "agentName is required" });
@@ -61,6 +69,13 @@ public sealed class ModelMappingTools(
         [Description("Filter by tier (e.g. 'frontier', 'strong-coding', 'capable'). Omit to list all.")] string? tier,
         CancellationToken ct)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.ListModelMappings",
+            ["Tier"] = tier,
+        });
+        logger.LogDebug("ListModelMappings invoked");
+
         var mappings = await store.ListAsync(tier?.Trim(), ct).ConfigureAwait(false);
         return JsonSerializer.Serialize(new
         {
@@ -92,6 +107,14 @@ public sealed class ModelMappingTools(
         [Description("Free-text notes")] string? notes = null,
         CancellationToken ct = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.UpdateModelMapping",
+            ["AgentName"] = agentName,
+            ["Tier"] = tier,
+        });
+        logger.LogDebug("UpdateModelMapping invoked");
+
         if (string.IsNullOrWhiteSpace(agentName) || string.IsNullOrWhiteSpace(primaryModel) || string.IsNullOrWhiteSpace(tier))
         {
             return JsonSerializer.Serialize(new { error = "agentName, primaryModel, and tier are required" });
@@ -127,6 +150,13 @@ public sealed class ModelMappingTools(
         [Description("If true, also overwrite manual overrides (default false)")] bool overwriteManual = false,
         CancellationToken ct = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.SyncModelMappings",
+            ["OverwriteManual"] = overwriteManual,
+        });
+        logger.LogDebug("SyncModelMappings invoked");
+
         var result = await syncService.SyncAsync(preserveManual: !overwriteManual, ct).ConfigureAwait(false);
         return JsonSerializer.Serialize(new
         {
@@ -145,6 +175,14 @@ public sealed class ModelMappingTools(
         [Description("Agent name to look up directly. If provided, task is ignored.")] string? agentName = null,
         CancellationToken ct = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.RecommendModel",
+            ["Task"] = task,
+            ["AgentName"] = agentName,
+        });
+        logger.LogDebug("RecommendModel invoked");
+
         if (string.IsNullOrWhiteSpace(task) && string.IsNullOrWhiteSpace(agentName))
         {
             return JsonSerializer.Serialize(new { error = "Provide either 'task' or 'agent_name' (or both)" });
@@ -199,6 +237,12 @@ public sealed class ModelMappingTools(
     [Description("List all configured LLM providers and their available models. Shows which providers are enabled and what models are accessible.")]
     public string ListLlmProviders()
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ModelMappingTools.ListLlmProviders",
+        });
+        logger.LogDebug("ListLlmProviders invoked");
+
         var providers = options.LlmProviders;
         return JsonSerializer.Serialize(new
         {

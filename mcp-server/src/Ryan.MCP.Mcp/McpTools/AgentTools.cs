@@ -7,25 +7,33 @@ using Ryan.MCP.Mcp.Services.ModelMapping;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingStore modelMappings)
+public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingStore modelMappings, ILogger<AgentTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
     [McpServerTool(Name = "list_agents")]
     [Description("List all available agents, skills, and instructions indexed by this MCP server. Returns name, description, scope, tags, and format for each. Example: call without args to get all, or with scope='backend' to filter.")]
     public string ListAgents(
-        [Description("Filter by scope (e.g. 'refactoring', 'security', 'testing'). Omit to list all.")] string? scope = null,
+        [Description("Filter by scope (e.g. 'refactoring', 'security', 'testing'). Omit to list all.")] string? scopeFilter = null,
         [Description("Comma-separated tags to filter by (e.g. 'csharp,dotnet'). Omit to list all.")] string? tags = null)
     {
+        using var logScope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.ListAgents",
+            ["Scope"] = scopeFilter,
+            ["Tags"] = tags,
+        });
+        logger.LogDebug("ListAgents invoked");
+
         var tagList = string.IsNullOrWhiteSpace(tags)
             ? new List<string>()
             : tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
 
-        var results = agents.ListAgents(scope, tagList);
+        var results = agents.ListAgents(scopeFilter, tagList);
         return JsonSerializer.Serialize(new
         {
             count = results.Count,
-            scope,
+            scope = scopeFilter,
             tags = tagList,
             agents = results.Select(a => new
             {
@@ -41,6 +49,13 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("Get the full content of a specific agent/skill/instruction by name. Returns the complete markdown including frontmatter and body.")]
     public string GetAgent([Description("The agent name exactly as returned by list_agents")] string name)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.GetAgent",
+            ["Name"] = name,
+        });
+        logger.LogDebug("GetAgent invoked");
+
         if (string.IsNullOrWhiteSpace(name))
         {
             return JsonSerializer.Serialize(new { error = "name is required" });
@@ -68,6 +83,13 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("Search agents by keyword across name, description, tags, and filename. Returns scored results sorted by relevance. Use to find the right agent for a task — try multiple terms like 'csharp test' or 'api design'.")]
     public string SearchAgents([Description("Search query, e.g. 'security audit' or 'csharp refactor' or 'react frontend'")] string query)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.SearchAgents",
+            ["Query"] = query,
+        });
+        logger.LogDebug("SearchAgents invoked");
+
         if (string.IsNullOrWhiteSpace(query))
         {
             return JsonSerializer.Serialize(new { error = "query is required" });
@@ -92,6 +114,12 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("List all available agent scopes and formats, with counts. Use this to understand what categories of agents are available.")]
     public string ListAgentScopes()
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.ListAgentScopes",
+        });
+        logger.LogDebug("ListAgentScopes invoked");
+
         var snapshot = agents.Snapshot;
         return JsonSerializer.Serialize(new
         {
@@ -106,6 +134,12 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("Get the current agent ingestion status including when agents were last indexed and how many are available.")]
     public string AgentStatus()
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.AgentStatus",
+        });
+        logger.LogDebug("AgentStatus invoked");
+
         var snapshot = agents.Snapshot;
         return JsonSerializer.Serialize(new
         {
@@ -125,6 +159,13 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
         [Description("Task description in natural language, e.g. 'security audit of my C# API' or 'refactor this class' or 'write unit tests'")] string task,
         CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.RecommendAgent",
+            ["Task"] = task,
+        });
+        logger.LogDebug("RecommendAgent invoked");
+
         if (string.IsNullOrWhiteSpace(task))
             return JsonSerializer.Serialize(new { error = "task description is required" });
 
@@ -180,6 +221,12 @@ public sealed class AgentTools(AgentIngestionCoordinator agents, IModelMappingSt
     [Description("Trigger a re-scan and re-index of all agent files. Use this after adding or modifying agent files.")]
     public async Task<string> IngestAgents(CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "AgentTools.IngestAgents",
+        });
+        logger.LogDebug("IngestAgents invoked");
+
         await agents.TriggerReindexAsync(cancellationToken).ConfigureAwait(false);
         var snapshot = agents.Snapshot;
         return JsonSerializer.Serialize(new

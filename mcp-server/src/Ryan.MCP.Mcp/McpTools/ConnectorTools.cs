@@ -6,7 +6,7 @@ using Ryan.MCP.Mcp.Services;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class ConnectorTools(ExternalConnectorRegistry connectors, ExternalMcpClientService externalMcp)
+public sealed class ConnectorTools(ExternalConnectorRegistry connectors, ExternalMcpClientService externalMcp, ILogger<ConnectorTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -14,6 +14,12 @@ public sealed class ConnectorTools(ExternalConnectorRegistry connectors, Externa
     [Description("List all configured external MCP connectors (e.g. Azure DevOps, GitHub, Docker) and whether they are enabled.")]
     public string ListExternalConnectors()
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ConnectorTools.ListExternalConnectors",
+        });
+        logger.LogDebug("ListExternalConnectors invoked");
+
         return JsonSerializer.Serialize(new
         {
             configuredCount = connectors.Configured.Count,
@@ -36,7 +42,15 @@ public sealed class ConnectorTools(ExternalConnectorRegistry connectors, Externa
     public Task<string> ListExternalMcpTools(
         [Description("External connector name, e.g. 'memory'")] string connector,
         CancellationToken cancellationToken = default)
-        => externalMcp.ListToolsAsync(connector, cancellationToken);
+    {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ConnectorTools.ListExternalMcpTools",
+            ["Connector"] = connector,
+        });
+        logger.LogDebug("ListExternalMcpTools invoked");
+        return externalMcp.ListToolsAsync(connector, cancellationToken);
+    }
 
     [McpServerTool(Name = "call_external_mcp_tool")]
     [Description(
@@ -48,5 +62,14 @@ public sealed class ConnectorTools(ExternalConnectorRegistry connectors, Externa
         [Description("Downstream tool name exactly as returned by list_external_mcp_tools")] string tool,
         [Description("JSON object of arguments, e.g. {\"query\":\"topic\"}. Omit or use null for no arguments.")] string? argumentsJson = null,
         CancellationToken cancellationToken = default)
-        => externalMcp.CallToolAsync(connector, tool, argumentsJson, cancellationToken);
+    {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ConnectorTools.CallExternalMcpTool",
+            ["Connector"] = connector,
+            ["Tool"] = tool,
+        });
+        logger.LogDebug("CallExternalMcpTool invoked");
+        return externalMcp.CallToolAsync(connector, tool, argumentsJson, cancellationToken);
+    }
 }

@@ -7,7 +7,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class PrTools
+public sealed class PrTools(ILogger<PrTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -20,6 +20,16 @@ public sealed class PrTools
         [Description("If true, returns just the summary bullets (for quick context)")] bool summaryOnly = false,
         CancellationToken cancellationToken = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "PrTools.GeneratePrDescription",
+            ["BaseBranch"] = baseBranch,
+            ["IssueNumber"] = issueNumber,
+            ["WorkingDirectory"] = workingDirectory,
+            ["SummaryOnly"] = summaryOnly,
+        });
+        logger.LogDebug("GeneratePrDescription invoked");
+
         baseBranch ??= "main";
         var gitDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
 

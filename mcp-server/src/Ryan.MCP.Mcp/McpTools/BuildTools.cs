@@ -7,7 +7,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class BuildTools
+public sealed class BuildTools(ILogger<BuildTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -22,56 +22,62 @@ public sealed class BuildTools
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
         var buildArgs = string.IsNullOrWhiteSpace(arguments) ? "build" : $"build {arguments}";
 
-        var attempts = new List<BuildAttempt>();
-        var attempt = 1;
-
-        while (attempt <= maxAttempts)
+        using (logger.BeginScope(new Dictionary<string, object?> { ["ToolName"] = "BuildTools.FixBuild", ["WorkingDirectory"] = workDir }))
+        using (logger.BeginScope(new Dictionary<string, object?> { ["MaxAttempts"] = maxAttempts, ["InvocationId"] = Guid.NewGuid().ToString("N")[..8] }))
         {
-            attempts.Add(new BuildAttempt { Number = attempt, StartTime = DateTime.UtcNow });
+            logger.LogDebug("FixBuild invoked for workDir={WorkDir}", workDir);
 
-            var (success, output, error) = await RunDotnetCommandAsync(workDir, buildArgs, cancellationToken);
-            attempts[attempt - 1].Success = success;
-            attempts[attempt - 1].Output = output.Length > 5000 ? output[..5000] : output;
-            attempts[attempt - 1].Error = error.Length > 5000 ? error[..5000] : error;
+            var attempts = new List<BuildAttempt>();
+            var attempt = 1;
 
-            if (success)
+            while (attempt <= maxAttempts)
             {
-                var rootCause = AnalyzeRootCause(attempts);
-                var minimalFix = DetermineMinimalFix(attempts, rootCause);
+                attempts.Add(new BuildAttempt { Number = attempt, StartTime = DateTime.UtcNow });
 
-                return JsonSerializer.Serialize(new
+                var (success, output, error) = await RunDotnetCommandAsync(workDir, buildArgs, cancellationToken);
+                attempts[attempt - 1].Success = success;
+                attempts[attempt - 1].Output = output.Length > 5000 ? output[..5000] : output;
+                attempts[attempt - 1].Error = error.Length > 5000 ? error[..5000] : error;
+
+                if (success)
                 {
-                    status = "success",
-                    attempts = attempts.Count,
-                    rootCause,
-                    minimalFix,
-                    buildOutput = output.Length > 3000 ? output[..3000] : output,
-                }, JsonOptions);
+                    var rootCause = AnalyzeRootCause(attempts);
+                    var minimalFix = DetermineMinimalFix(attempts, rootCause);
+
+                    return JsonSerializer.Serialize(new
+                    {
+                        status = "success",
+                        attempts = attempts.Count,
+                        rootCause,
+                        minimalFix,
+                        buildOutput = output.Length > 3000 ? output[..3000] : output,
+                    }, JsonOptions);
+                }
+
+                if (attempt < maxAttempts)
+                {
+                    await Task.Delay(500, cancellationToken);
+                }
+                attempt++;
             }
 
-            if (attempt < maxAttempts)
+            var finalRootCause = AnalyzeRootCause(attempts);
+
+            return JsonSerializer.Serialize(new
             {
-                await Task.Delay(500, cancellationToken);
-            }
-            attempt++;
+                status = "failed",
+                attempts = attempts.Count,
+                finalError = attempts.Last().Error,
+                rootCause = finalRootCause,
+                suggestions = new[]
+                {
+                    "Check for missing dependencies: dotnet restore",
+                    "Check for compilation errors in output above",
+                    "Check for version mismatches in .csproj files",
+                    "Try cleaning: dotnet clean",
+                }
+            }, JsonOptions);
         }
-
-        var finalRootCause = AnalyzeRootCause(attempts);
-
-        return JsonSerializer.Serialize(new
-        {
-            status = "failed",
-            attempts = attempts.Count,
-            finalError = attempts.Last().Error,
-            rootCause = finalRootCause,
-            suggestions = new[]
-            {
-                "Check for missing dependencies: dotnet restore",
-                "Check for compilation errors in output above",
-                "Check for version mismatches in .csproj files",
-                "Try cleaning: dotnet clean",
-            }
-        }, JsonOptions);
     }
 
     private static async Task<(bool success, string output, string error)> RunDotnetCommandAsync(

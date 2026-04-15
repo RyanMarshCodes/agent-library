@@ -8,7 +8,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class NuGetTools
+public sealed class NuGetTools(ILogger<NuGetTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -22,31 +22,36 @@ public sealed class NuGetTools
     {
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
 
-        var results = new NuGetHygieneResult();
-
-        try
+        using (logger.BeginScope(new Dictionary<string, object?> { ["ToolName"] = "NuGetTools.NugetHygiene", ["WorkingDirectory"] = workDir }))
         {
-            var (hasOutdated, outdatedOutput) = await CheckOutdatedAsync(workDir, includePrerelease, cancellationToken);
-            results.HasOutdated = hasOutdated;
-            results.OutdatedPackages = ParseOutdatedPackages(outdatedOutput);
+            logger.LogDebug("NugetHygiene invoked for workDir={WorkDir}", workDir);
 
-            if (!vulnerabilitiesOnly)
+            var results = new NuGetHygieneResult();
+
+            try
             {
-                var (hasVulns, vulnOutput) = await CheckVulnerabilitiesAsync(workDir, cancellationToken);
-                results.HasVulnerabilities = hasVulns;
-                results.Vulnerabilities = ParseVulnerabilities(vulnOutput);
+                var (hasOutdated, outdatedOutput) = await CheckOutdatedAsync(workDir, includePrerelease, cancellationToken);
+                results.HasOutdated = hasOutdated;
+                results.OutdatedPackages = ParseOutdatedPackages(outdatedOutput);
+
+                if (!vulnerabilitiesOnly)
+                {
+                    var (hasVulns, vulnOutput) = await CheckVulnerabilitiesAsync(workDir, cancellationToken);
+                    results.HasVulnerabilities = hasVulns;
+                    results.Vulnerabilities = ParseVulnerabilities(vulnOutput);
+                }
+
+                results.BreakingChanges = await CheckBreakingChangesAsync(workDir, results.OutdatedPackages, cancellationToken);
+                results.Recommendations = GenerateRecommendations(results);
+                results.ProjectFiles = await FindProjectFilesAsync(workDir, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                results.Error = ex.Message;
             }
 
-            results.BreakingChanges = await CheckBreakingChangesAsync(workDir, results.OutdatedPackages, cancellationToken);
-            results.Recommendations = GenerateRecommendations(results);
-            results.ProjectFiles = await FindProjectFilesAsync(workDir, cancellationToken);
+            return JsonSerializer.Serialize(results, JsonOptions);
         }
-        catch (Exception ex)
-        {
-            results.Error = ex.Message;
-        }
-
-        return JsonSerializer.Serialize(results, JsonOptions);
     }
 
     private static async Task<(bool, string)> CheckOutdatedAsync(string workDir, bool includePrerelease, CancellationToken ct)

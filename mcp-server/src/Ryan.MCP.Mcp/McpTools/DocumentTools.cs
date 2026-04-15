@@ -6,7 +6,7 @@ using Ryan.MCP.Mcp.Services;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class DocumentTools(DocumentIngestionCoordinator documents)
+public sealed class DocumentTools(DocumentIngestionCoordinator documents, ILogger<DocumentTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -16,6 +16,14 @@ public sealed class DocumentTools(DocumentIngestionCoordinator documents)
         [Description("Filter by tier: 'official', 'organization', or 'project'. Omit to list all.")] string? tier = null,
         [Description("Filter by language or subdirectory prefix (e.g. 'csharp', 'typescript'). Omit to list all.")] string? language = null)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DocumentTools.ListStandards",
+            ["Tier"] = tier,
+            ["Language"] = language,
+        });
+        logger.LogDebug("ListStandards invoked");
+
         var snapshot = documents.Snapshot;
         var docs = snapshot.Documents.AsEnumerable();
 
@@ -49,6 +57,14 @@ public sealed class DocumentTools(DocumentIngestionCoordinator documents)
         [Description("Relative path as returned by list_standards, e.g. 'csharp/async-programming.md'")] string path,
         CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DocumentTools.ReadDocument",
+            ["Tier"] = tier,
+            ["Path"] = path,
+        });
+        logger.LogDebug("ReadDocument invoked");
+
         var entry = documents.Snapshot.Documents.FirstOrDefault(d =>
             d.Tier.Equals(tier, StringComparison.OrdinalIgnoreCase) &&
             d.RelativePath.Equals(path.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase));
@@ -86,6 +102,13 @@ public sealed class DocumentTools(DocumentIngestionCoordinator documents)
         [Description("Search query, e.g. 'async await' or 'dependency injection' or 'error handling'")] string query,
         CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DocumentTools.SearchDocuments",
+            ["Query"] = query,
+        });
+        logger.LogDebug("SearchDocuments invoked");
+
         if (string.IsNullOrWhiteSpace(query))
             return JsonSerializer.Serialize(new { error = "query is required" });
 
@@ -120,6 +143,12 @@ public sealed class DocumentTools(DocumentIngestionCoordinator documents)
     [Description("Get the current document ingestion status — when documents were last indexed and how many are indexed per tier.")]
     public string IngestionStatus()
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DocumentTools.IngestionStatus",
+        });
+        logger.LogDebug("IngestionStatus invoked");
+
         var snapshot = documents.Snapshot;
         return JsonSerializer.Serialize(new
         {
@@ -136,6 +165,12 @@ public sealed class DocumentTools(DocumentIngestionCoordinator documents)
     [Description("Trigger a re-scan and re-index of all knowledge documents. Use after adding or modifying documents.")]
     public async Task<string> IngestDocuments(CancellationToken cancellationToken)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DocumentTools.IngestDocuments",
+        });
+        logger.LogDebug("IngestDocuments invoked");
+
         await documents.TriggerReindexAsync(cancellationToken).ConfigureAwait(false);
         var snapshot = documents.Snapshot;
         return JsonSerializer.Serialize(new

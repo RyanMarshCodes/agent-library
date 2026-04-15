@@ -7,7 +7,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class DiffAnalysisTools
+public sealed class DiffAnalysisTools(ILogger<DiffAnalysisTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -22,6 +22,15 @@ public sealed class DiffAnalysisTools
         [Description("Working directory (defaults to current)")] string? workingDirectory = null,
         CancellationToken cancellationToken = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "DiffAnalysisTools.AnalyzeDiff",
+            ["Mode"] = mode,
+            ["BaseBranch"] = baseBranch,
+            ["WorkingDirectory"] = workingDirectory,
+        });
+        logger.LogDebug("AnalyzeDiff invoked");
+
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
         baseBranch ??= "main";
 

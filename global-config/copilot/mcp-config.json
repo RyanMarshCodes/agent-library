@@ -1,49 +1,49 @@
 {
   "mcpServers": {
-    "chrome-devtools": {
-      "command": "npx",
-      "type": "local",
-      "args": [
-        "-y",
-        "chrome-devtools-mcp@latest"
-      ],
-      "tools": [
-        "*"
-      ]
-    },
     "ryan-mcp": {
-      "type": "http",
-      "url": "http://localhost:8787/mcp"
-    },
-    "aspire": {
-      "command": "aspire",
-      "type": "local",
-      "args": [
-        "agent",
-        "mcp"
-      ],
-      "tools": [
-        "*"
-      ]
+      "url": "http://localhost:8787/mcp",
+      "type": "http"
     },
     "playwright": {
-      "command": "npx",
-      "type": "local",
       "args": [
         "@playwright/mcp@latest"
       ],
+      "command": "npx",
+      "type": "local",
       "tools": [
         "*"
       ]
     },
     "filesystem": {
-      "command": "npx",
-      "type": "local",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "."
       ],
+      "command": "npx",
+      "type": "local",
+      "tools": [
+        "*"
+      ]
+    },
+    "aspire": {
+      "args": [
+        "agent",
+        "mcp"
+      ],
+      "command": "aspire",
+      "type": "local",
+      "tools": [
+        "*"
+      ]
+    },
+    "chrome-devtools": {
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "command": "npx",
+      "type": "local",
       "tools": [
         "*"
       ]

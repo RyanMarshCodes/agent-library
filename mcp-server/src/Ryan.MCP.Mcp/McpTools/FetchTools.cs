@@ -65,67 +65,72 @@ public sealed partial class FetchTools(IHttpClientFactory httpClientFactory, ILo
         var limit = Math.Clamp(maxLength ?? DefaultMaxLength, 1, AbsoluteMaxLength);
         var client = httpClientFactory.CreateClient("fetch");
 
-        try
+        using (logger.BeginScope(new Dictionary<string, object?> { ["ToolName"] = "FetchTools.Fetch", ["Url"] = url, ["MaxLength"] = maxLength }))
         {
-            using var response = await client
-                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
+            logger.LogDebug("Fetch invoked for {Url}", url);
 
-            var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
+                using var response = await client
+                    .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Serialize(new
+                    {
+                        url,
+                        statusCode = (int)response.StatusCode,
+                        error = $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}",
+                    }, JsonOptions);
+                }
+
+                var raw = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+                string content;
+                string format;
+
+                if (contentType.Contains("html", StringComparison.OrdinalIgnoreCase))
+                {
+                    content = ExtractTextFromHtml(raw);
+                    format = "html→text";
+                }
+                else
+                {
+                    content = raw;
+                    format = contentType is { Length: > 0 } ? contentType : "text";
+                }
+
+                var truncated = content.Length > limit;
+
                 return JsonSerializer.Serialize(new
                 {
                     url,
                     statusCode = (int)response.StatusCode,
-                    error = $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}",
+                    contentType,
+                    format,
+                    totalLength = content.Length,
+                    truncated,
+                    truncatedAt = truncated ? (int?)limit : null,
+                    content = truncated ? content[..limit] : content,
                 }, JsonOptions);
             }
-
-            var raw = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            string content;
-            string format;
-
-            if (contentType.Contains("html", StringComparison.OrdinalIgnoreCase))
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
-                content = ExtractTextFromHtml(raw);
-                format = "html→text";
+                return Err($"Request to {url} timed out");
             }
-            else
+            catch (HttpRequestException ex)
             {
-                content = raw;
-                format = contentType is { Length: > 0 } ? contentType : "text";
+                logger.LogWarning(ex, "Fetch failed for {Url}", url);
+                return Err($"Network error: {ex.Message}");
             }
-
-            var truncated = content.Length > limit;
-
-            return JsonSerializer.Serialize(new
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                url,
-                statusCode = (int)response.StatusCode,
-                contentType,
-                format,
-                totalLength = content.Length,
-                truncated,
-                truncatedAt = truncated ? (int?)limit : null,
-                content = truncated ? content[..limit] : content,
-            }, JsonOptions);
-        }
-        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return Err($"Request to {url} timed out");
-        }
-        catch (HttpRequestException ex)
-        {
-            logger.LogWarning(ex, "Fetch failed for {Url}", url);
-            return Err($"Network error: {ex.Message}");
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogError(ex, "Unexpected error fetching {Url}", url);
-            return Err($"Unexpected error: {ex.Message}");
+                logger.LogError(ex, "Unexpected error fetching {Url}", url);
+                return Err($"Unexpected error: {ex.Message}");
+            }
         }
     }
 

@@ -7,7 +7,7 @@ using Ryan.MCP.Mcp.Services;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentIngestionCoordinator documents)
+public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentIngestionCoordinator documents, ILogger<ContextTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -22,6 +22,14 @@ public sealed class ContextTools(AgentIngestionCoordinator agents, DocumentInges
         [Description("Programming language or framework (e.g. 'csharp', 'typescript', 'python', 'go', 'rust', 'java', 'kotlin', 'react'). Omit for universal context.")] string? language = null,
         [Description("Optional task description for targeted recommendations (e.g. 'security audit', 'refactoring', 'write tests', 'code review')")] string? task = null)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "ContextTools.GetContext",
+            ["Language"] = language,
+            ["Task"] = task,
+        });
+        logger.LogDebug("GetContext invoked");
+
         var agentSnapshot = agents.Snapshot;
         var docSnapshot = documents.Snapshot;
 

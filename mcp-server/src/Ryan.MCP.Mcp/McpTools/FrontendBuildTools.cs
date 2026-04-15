@@ -6,7 +6,7 @@ using ModelContextProtocol.Server;
 namespace Ryan.MCP.Mcp.McpTools;
 
 [McpServerToolType]
-public sealed class FrontendBuildTools
+public sealed class FrontendBuildTools(ILogger<FrontendBuildTools> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
@@ -20,6 +20,15 @@ public sealed class FrontendBuildTools
         [Description("Maximum attempts before stopping")] int maxAttempts = 5,
         CancellationToken cancellationToken = default)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ToolName"] = "FrontendBuildTools.FixFrontendBuild",
+            ["WorkingDirectory"] = workingDirectory,
+            ["BuildScript"] = buildScript,
+            ["MaxAttempts"] = maxAttempts,
+        });
+        logger.LogDebug("FixFrontendBuild invoked");
+
         var workDir = string.IsNullOrWhiteSpace(workingDirectory) ? "." : workingDirectory;
 
         if (!File.Exists(Path.Combine(workDir, "package.json")))

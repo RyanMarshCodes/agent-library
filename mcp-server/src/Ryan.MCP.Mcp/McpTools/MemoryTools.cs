@@ -27,41 +27,44 @@ public sealed class MemoryTools(
     {
         maxResults = Math.Clamp(maxResults, 1, 10);
 
-        logger.LogDebug("MemoryRecall called with query: {Query}, maxResults: {MaxResults}", query, maxResults);
-
-        try
+        using (logger.BeginScope(new Dictionary<string, object?> { ["ToolName"] = "MemoryTools.MemoryRecall", ["Query"] = query, ["MaxResults"] = maxResults }))
         {
-            var results = await memoryStore.SearchAsync(query, maxResults, cancellationToken).ConfigureAwait(false);
-            if (results.Count > 0)
+            logger.LogDebug("MemoryRecall invoked for query={Query}", query);
+
+            try
             {
+                var results = await memoryStore.SearchAsync(query, maxResults, cancellationToken).ConfigureAwait(false);
+                if (results.Count > 0)
+                {
+                    return JsonSerializer.Serialize(new
+                    {
+                        status = "ok",
+                        source = "memory.postgres.search",
+                        query,
+                        count = results.Count,
+                        confidence = "high",
+                        results = results.Select(r => new { name = r.Name, entityType = r.EntityType, observations = r.Observations.Take(3) }),
+                    }, JsonOptions);
+                }
+
                 return JsonSerializer.Serialize(new
                 {
-                    status = "ok",
+                    status = "empty",
                     source = "memory.postgres.search",
                     query,
-                    count = results.Count,
-                    confidence = "high",
-                    results = results.Select(r => new { name = r.Name, entityType = r.EntityType, observations = r.Observations.Take(3) }),
+                    message = "No existing memory found for this query.",
+                    hint = "This is normal for new projects or first sessions.",
                 }, JsonOptions);
             }
-
-            return JsonSerializer.Serialize(new
+            catch (Exception ex)
             {
-                status = "empty",
-                source = "memory.postgres.search",
-                query,
-                message = "No existing memory found for this query.",
-                hint = "This is normal for new projects or first sessions.",
-            }, JsonOptions);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Memory recall failed");
-            return ErrorResponse(
-                status: "connector_unavailable",
-                stage: "recall:exception",
-                message: ex.Message,
-                hint: "Check postgres memory backend health.");
+                logger.LogWarning(ex, "Memory recall failed");
+                return ErrorResponse(
+                    status: "connector_unavailable",
+                    stage: "recall:exception",
+                    message: ex.Message,
+                    hint: "Check postgres memory backend health.");
+            }
         }
     }
 
